@@ -20,7 +20,7 @@ library("ggplot2")
 #install.packages("plot3D")
 library("plot3D")
 
-setwd("~/Dropbox/Jeffery He/iResearch/Publications/2012/HE2020-WFM-2L-DiffusApprox-TheorPopulBiol")
+setwd("~/Dropbox/Jeffery He/iResearch/Publications/2017/HE2020-WFM-2L-DiffusApprox-TheorPopulBiol")
 
 ################################################################################
 
