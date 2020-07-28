@@ -94,34 +94,7 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-
-
-
-########################################
-
-#' Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Terhorst et al. (2015) 
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-
-
-
-########################################
-
-#' Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Paris et al. (2019) 
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param moment_approx the moment approximation (Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 
 
 
