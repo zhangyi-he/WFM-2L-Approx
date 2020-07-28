@@ -21,7 +21,7 @@ using namespace std;
 /********** WFM **********/
 // Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
 // [[Rcpp::export]]
-arma::dmat simulateTLWFMS_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+arma::dmat simulateWFM_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
   
@@ -93,7 +93,7 @@ arma::dmat simulateTLWFMS_arma(const double& sel_cof_A, const double& dom_par_A,
 /***** DiffusApprox ******/
 // Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
 // [[Rcpp::export]]
-arma::dmat simulateTLWFDS_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
+arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
   
