@@ -250,11 +250,7 @@ arma::dmat simulateTLWFDS_arma(const double& sel_cof_A, const double& dom_par_A,
 /*************************/
 
 
-/*********** GP **********/
-// Simulate the mutant allele frequency trajectory according to the guided process of Delyon & Hu (2006) using the Euler-Maruyama method
-
-
-
+/****** GuidedProc *******/
 // Simulate the mutant allele frequency trajectory according to the guided process of Fearnhead (2008) using the Euler-Maruyama method
 
 
@@ -266,8 +262,12 @@ arma::dmat simulateTLWFDS_arma(const double& sel_cof_A, const double& dom_par_A,
 /*************************/
 
 
-/********** TPD **********/
+/******* TransPDF ********/
 // Approximate the transition probability density of the two-locus Wright-Fisher model with selection using Monte Carlo integration
+
+
+
+// Calculate the importance weight
 
 
 
