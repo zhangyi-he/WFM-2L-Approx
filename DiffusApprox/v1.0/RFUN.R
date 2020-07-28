@@ -23,7 +23,7 @@ library("compiler")
 #enableJIT(1)
 
 # call C++ functions
-sourceCpp("./Code/Code v2.1/Code v2.1/CFUN_2L.cpp")
+sourceCpp("./DiffusApprox/v1.0/CFUN_2L.cpp")
 
 ################################################################################
 
@@ -40,7 +40,7 @@ sourceCpp("./Code/Code v2.1/Code v2.1/CFUN_2L.cpp")
 simulateOLWFMS <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen) {
   frq_pth <- simulateOLWFMS_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen)
   frq_pth <- as.vector(frq_pth)
-  
+
   return(frq_pth)
 }
 #' Compiled version
@@ -63,12 +63,12 @@ cmpsimulateOLWFMS <- cmpfun(simulateOLWFMS)
 simulateOLWFDS <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = TRUE) {
   frq_pth <- simulateOLWFDS_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
   frq_pth <- as.vector(frq_pth)
-  
+
   if (data_augmentation == FALSE) {
     return(frq_pth[(0:(lst_gen - int_gen)) * ptn_num + 1])
   } else {
     return(frq_pth)
-  }  
+  }
 }
 #' Compiled version
 cmpsimulateOLWFDS <- cmpfun(simulateOLWFDS)
@@ -91,9 +91,9 @@ simulateTLWFMS <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen,
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
-  
+
   frq_pth <- simulateTLWFMS_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
-  
+
   return(frq_pth)
 }
 #' Compiled version
@@ -119,9 +119,9 @@ simulateTLWFDS <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen,
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
-  
+
   frq_pth <- simulateTLWFDS_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
-  
+
   if (data_augmentation == FALSE) {
     return(frq_pth[, (0:(lst_gen - int_gen)) * ptn_num + 1])
   } else {
