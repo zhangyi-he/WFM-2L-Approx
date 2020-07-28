@@ -58,55 +58,7 @@ arma::drowvec simulateOLWFMS_arma(const double& sel_cof, const double& dom_par, 
   
   return ale_frq_pth;
 }
-/*************************/
 
-
-/********** WFD **********/
-// Simulate the mutant allele frequency trajectory according to the one-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
-// [[Rcpp::export]]
-arma::drowvec simulateOLWFDS_arma(const double& sel_cof, const double& dom_par, const int& pop_siz, const double& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
-  // ensure RNG gets set/reset
-  RNGScope scope;
-  
-  // rescale the selection coefficient
-  double scl_sel_cof = 2 * pop_siz * sel_cof;
-  
-  // declare delta t
-  double dt = 1.0 / (2 * pop_siz) / ptn_num;
-  // declare delta W
-  arma::drowvec dW = pow(dt, 0.5) * arma::randn<arma::drowvec>(arma::uword(lst_gen - int_gen) * ptn_num);
-  
-  // declare the mutant allele frequency trajectory
-  arma::drowvec ale_frq_pth(arma::uword(lst_gen - int_gen) * ptn_num + 1);
-  
-  // initialise the mutant allele frequency in generation 0
-  ale_frq_pth(0) = int_frq;
-  
-  for (arma::uword t = 1; t < arma::uword(lst_gen - int_gen) * ptn_num + 1; t++) {
-    // calculate the drift coefficient
-    double mu = scl_sel_cof * ale_frq_pth(t - 1) * (1 - ale_frq_pth(t - 1)) * ((1 - dom_par) - (1 - 2 * dom_par) * ale_frq_pth(t - 1));
-    
-    // calculate the diffusion coefficient
-    double sigma = pow(ale_frq_pth(t - 1) * (1 - ale_frq_pth(t - 1)), 0.5);
-    
-    // proceed the Euler-Maruyama scheme
-    ale_frq_pth(t) = ale_frq_pth(t - 1) + mu * dt + sigma * dW(t - 1);
-    
-    // remove the noise from the numerical techniques
-    if (ale_frq_pth(t) < 0) {
-      ale_frq_pth(t) = 0;
-    }
-    if (ale_frq_pth(t) > 1) {
-      ale_frq_pth(t) = 1;
-    }
-  }
-  
-  return ale_frq_pth;
-}
-/*************************/
-
-
-/********** WFM **********/
 // Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
 // [[Rcpp::export]]
 arma::dmat simulateTLWFMS_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
@@ -179,6 +131,48 @@ arma::dmat simulateTLWFMS_arma(const double& sel_cof_A, const double& dom_par_A,
 
 
 /********** WFD **********/
+// Simulate the mutant allele frequency trajectory according to the one-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
+// [[Rcpp::export]]
+arma::drowvec simulateOLWFDS_arma(const double& sel_cof, const double& dom_par, const int& pop_siz, const double& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+  
+  // rescale the selection coefficient
+  double scl_sel_cof = 2 * pop_siz * sel_cof;
+  
+  // declare delta t
+  double dt = 1.0 / (2 * pop_siz) / ptn_num;
+  // declare delta W
+  arma::drowvec dW = pow(dt, 0.5) * arma::randn<arma::drowvec>(arma::uword(lst_gen - int_gen) * ptn_num);
+  
+  // declare the mutant allele frequency trajectory
+  arma::drowvec ale_frq_pth(arma::uword(lst_gen - int_gen) * ptn_num + 1);
+  
+  // initialise the mutant allele frequency in generation 0
+  ale_frq_pth(0) = int_frq;
+  
+  for (arma::uword t = 1; t < arma::uword(lst_gen - int_gen) * ptn_num + 1; t++) {
+    // calculate the drift coefficient
+    double mu = scl_sel_cof * ale_frq_pth(t - 1) * (1 - ale_frq_pth(t - 1)) * ((1 - dom_par) - (1 - 2 * dom_par) * ale_frq_pth(t - 1));
+    
+    // calculate the diffusion coefficient
+    double sigma = pow(ale_frq_pth(t - 1) * (1 - ale_frq_pth(t - 1)), 0.5);
+    
+    // proceed the Euler-Maruyama scheme
+    ale_frq_pth(t) = ale_frq_pth(t - 1) + mu * dt + sigma * dW(t - 1);
+    
+    // remove the noise from the numerical techniques
+    if (ale_frq_pth(t) < 0) {
+      ale_frq_pth(t) = 0;
+    }
+    if (ale_frq_pth(t) > 1) {
+      ale_frq_pth(t) = 1;
+    }
+  }
+  
+  return ale_frq_pth;
+}
+
 // Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
 // [[Rcpp::export]]
 arma::dmat simulateTLWFDS_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
@@ -255,3 +249,30 @@ arma::dmat simulateTLWFDS_arma(const double& sel_cof_A, const double& dom_par_A,
 }
 /*************************/
 
+
+/*********** GP **********/
+// Simulate the mutant allele frequency trajectory according to the guided process of Delyon & Hu (2006) using the Euler-Maruyama method
+
+
+
+// Simulate the mutant allele frequency trajectory according to the guided process of Fearnhead (2008) using the Euler-Maruyama method
+
+
+
+// Simulate the mutant allele frequency trajectory according to the guided process of He et al. (2020) using the Euler-Maruyama method
+
+
+
+/*************************/
+
+
+/********** TPD **********/
+// Approximate the transition probability density of the two-locus Wright-Fisher model with selection using Monte Carlo integration
+
+
+
+// Approximate the transition probability density of the two-locus Wright-Fisher model with selection using Monte Carlo integration with importance sampling
+
+
+
+/*************************/
