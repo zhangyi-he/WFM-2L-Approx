@@ -4,4 +4,4 @@ Source code is implemented for approximations for the Wright-Fisher model of pop
 
 The preprint for the diffusion approximation is available at https://www.biorxiv.org/content/10.1101/2020.07.21.213769v1.
 
-The preprint for the parametric approximation is available at https://www.biorxiv.org/content/10.1101/2020.07.21.213769v1.
+The preprint for the moment-based approximation is available at https://www.biorxiv.org/content/10.1101/2020.07.21.213769v1.
