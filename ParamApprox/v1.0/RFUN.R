@@ -1,4 +1,4 @@
-#' @title Parametric approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
+#' @title Moment-based approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
 #' @author Zhangyi He, Wenyang Lyu and Feng Yu
 
 #' version 1.0
