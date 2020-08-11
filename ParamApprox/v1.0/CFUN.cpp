@@ -1,4 +1,4 @@
-// Parametric approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
+// Moment-based approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
 // Zhangyi He, Wenyang Lyu and Feng Yu
 
 // version 1.0
@@ -170,31 +170,64 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
 
 /***** MomentApprox ******/
 // Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Lacerda & Seoighe (2014) 
+arma::dmat approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
 
 
+  // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
+}
 
 // Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Terhorst et al. (2015) 
+arma::dmat approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
 
 
+  // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
+}
 
 // Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Paris et al. (2019) 
+arma::dmat approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
 
 
+  // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
+}
 
 /*************************/
 
 
 /****** ParamApprox ******/
-// Approximate the two-locus Wright-Fisher model with selection using the normal
+// Approximate the two-locus Wright-Fisher model with selection using the normal distribution
+arma::dmat approximatWFM_norm_arma(const dmat& moment) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
 
 
 
-// Approximate the two-locus Wright-Fisher model with selection using the logit-normal 
+  // return the parameters of the normal distribution
+}
+
+// Approximate the two-locus Wright-Fisher model with selection using the logit-normal distribution
+arma::dmat approximatWFM_logitnorm_arma(const dmat& moment) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
 
 
 
-// Approximate the two-locus Wright-Fisher model with selection using the hierarchical beta 
+  // return the parameters of the logit-normal distribution
+}
+
+// Approximate the two-locus Wright-Fisher model with selection using the hierarchical beta distribution
+arma::dmat approximatWFM_hierbeta_arma(const dmat& moment) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
 
 
+
+  // return the parameters of the hierarchical beta distribution
+}
 
 /*************************/
