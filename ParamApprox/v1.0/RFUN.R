@@ -1,5 +1,5 @@
 #' @title Moment-based approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
-#' @author Zhangyi He, Wenyang Lyu and Feng Yu
+#' @author Zhangyi He, Wenyang Lyu, Mark Beaumont and Feng Yu
 
 #' version 1.0
 
@@ -85,7 +85,7 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 
 ########################################
 
-#' Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Lacerda & Seoighe (2014) 
+#' Approximate the first two moments of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -94,7 +94,7 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param moment_approx the moment approximation (Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param moment_approx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 
 
 
@@ -109,13 +109,13 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param moment_approx the moment approximation (Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param moment_approx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 
 
 
 ########################################
 
-#' Approximate the two-locus Wright-Fisher model with selection using the logit-normal 
+#' Approximate the two-locus Wright-Fisher model with selection using the logitic normal 
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -124,7 +124,7 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param moment_approx the moment approximation (Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param moment_approx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 
 
 
@@ -139,7 +139,7 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param moment_approx the moment approximation (Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param moment_approx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 
 
 
