@@ -210,7 +210,7 @@ arma::dmat approximateMoment_Paris_arma(const double& sel_cof_A, const double& d
 
 /****** ParamApprox ******/
 // Approximate the two-locus Wright-Fisher model with selection using the normal distribution
-arma::dmat approximatWFM_norm_arma(const dmat& moment) {
+arma::dmat approximatWFM_norm_arma(const dcolvec& mean, const dmat& variance) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -220,7 +220,7 @@ arma::dmat approximatWFM_norm_arma(const dmat& moment) {
 }
 
 // Approximate the two-locus Wright-Fisher model with selection using the logistic normal distribution
-arma::dmat approximatWFM_logisticnorm_arma(const dmat& moment) {
+arma::dmat approximatWFM_logisticnorm_arma(const dcolvec& mean, const dmat& variance) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -239,7 +239,7 @@ arma::dmat approximateMoment_logisticnorm_arma(const double& sel_cof_A, const do
 }
 
 // Approximate the two-locus Wright-Fisher model with selection using the hierarchical beta distribution
-arma::dmat approximatWFM_hierarchicalbeta_arma(const dmat& moment) {
+arma::dmat approximatWFM_hierarchicalbeta_arma(const dcolvec& mean, const dmat& variance) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
