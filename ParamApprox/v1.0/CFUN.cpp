@@ -357,31 +357,39 @@ List approximatWFM_norm_arma(const dmat& mean, const dcube& variance) {
                       Named("variance", sigma));
 }
 
-  arma::dcolvec calculate_phi(const arma::dcolvec& hap_frq){
-    // ensure RNG gets set/reset
-    RNGScope scope;
+// Simulate the two-locus Wright-Fisher model with selection using the normal approximation
+arma::dcube simulateWFM_norm_arma(const dmat& mean, const dcube& variance) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+}
 
-    arma::dcolvec phi(3);
-    phi(0) = arma::log(hap_frq(0) / hap_frq(3));
-    phi(1) = arma::log(hap_frq(1) / hap_frq(3));
-    phi(2) = arma::log(hap_frq(2) / hap_frq(3));
-    return phi;
-  }
+
+
+arma::dcolvec calculate_phi(const arma::dcolvec& hap_frq){
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dcolvec phi(3);
+  phi(0) = arma::log(hap_frq(0) / hap_frq(3));
+  phi(1) = arma::log(hap_frq(1) / hap_frq(3));
+  phi(2) = arma::log(hap_frq(2) / hap_frq(3));
+  return phi;
+}
   
-  arma::dmat calculate_grad_phi(const arma::dcolvec& hap_frq){
-    // ensure RNG gets set/reset
-    RNGScope scope;
-    
-    arma::dmat grad_phi(3, 4);
-    grad_phi(0, 0) = 1 / hap_frq(0);
-    grad_phi(1, 1) = 1 / hap_frq(1);
-    grad_phi(2, 2) = 1 / hap_frq(2);
-    grad_phi(0, 3) = -1 / hap_frq(3);
-    grad_phi(1, 3) = -1 / hap_frq(3);
-    grad_phi(2, 3) = -1 / hap_frq(3);
-    
-    return grad_phi;
-  }
+arma::dmat calculate_grad_phi(const arma::dcolvec& hap_frq){
+  // ensure RNG gets set/reset
+  RNGScope scope;
+  
+  arma::dmat grad_phi(3, 4);
+  grad_phi(0, 0) = 1 / hap_frq(0);
+  grad_phi(1, 1) = 1 / hap_frq(1);
+  grad_phi(2, 2) = 1 / hap_frq(2);
+  grad_phi(0, 3) = -1 / hap_frq(3);
+  grad_phi(1, 3) = -1 / hap_frq(3);
+  grad_phi(2, 3) = -1 / hap_frq(3);
+  
+  return grad_phi;
+}
   
 // Approximate the two-locus Wright-Fisher model with selection using the logistic normal distribution
 List approximatWFM_logisticnorm_arma(const dmat& mean, const dcube& variance, const int& int_gen, const int& lst_gen) {
@@ -400,6 +408,12 @@ List approximatWFM_logisticnorm_arma(const dmat& mean, const dcube& variance, co
                       Named("variance", V));
 }
 
+// Simulate the two-locus Wright-Fisher model with selection using the logistic normal approximation
+arma::dcube simulateWFM_logisticnorm_arma(const dmat& mean, const dcube& variance) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+}
+
 // Approximate the first two moments of the logistic normal approximation of the two-locus Wright-Fisher model with selection
 arma::dmat approximateMoment_logisticnorm_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
@@ -408,6 +422,8 @@ arma::dmat approximateMoment_logisticnorm_arma(const double& sel_cof_A, const do
 
   // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
 }
+
+
 
 // Approximate the two-locus Wright-Fisher model with selection using the hierarchical beta distribution
 List approximatWFM_hierarchicalbeta_arma(const dmat& mean, const dcube& variance) {
@@ -425,6 +441,12 @@ List approximatWFM_hierarchicalbeta_arma(const dmat& mean, const dcube& variance
   // return the parameters of the hierarchical beta distribution
   return List::create(Named("mean", m),
                       Named("variance", V));
+}
+
+// Simulate the two-locus Wright-Fisher model with selection using the hierarchical beta approximation
+arma::dcube simulateWFM_hierarchicalbeta_arma(const dmat& mean, const dcube& variance) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
 }
 
 // Approximate the first two moments of the hierarchical beta approximation of the two-locus Wright-Fisher model with selection
