@@ -171,6 +171,34 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
 /***** MomentApprox ******/
 // Approximate the first two moments of the two-locus Wright-Fisher model with selection using Monte Carlo simulation 
 
+// [[Rcpp::export]]
+List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+  arma::dmat mu(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube sigma(4, 4, arma::uword(lst_gen - int_gen) + 1);
+  mu.col(0) = int_frq;
+  arma::dmat int_var = arma::zeros<arma::dmat>(4, 4);
+  sigma.slice(0) = int_var;
+  
+  int num_sim = 1e1; // number of simulations per generation
+  arma::dcube path(4, arma::uword(lst_gen - int_gen) + 1, num_sim);
+  for(arma::uword i = 1; i < num_sim; i++) {
+    path.slice(i) = simulateWFM_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
+  }
+  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    arma::dmat pth_k = path.col(k);
+    mu.col(k) = arma::mean(pth_k, 1);
+    arma::dmat cov_mat = arma::cov(pth_k.t(), pth_k.t());
+    sigma.slice(k) = cov_mat;
+  }
+  
+  // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
+  return List::create(Named("mean", mu),
+                      Named("variance", sigma));
+}
+
+
 // Calculate the fitness matrix for the Wright-Fisher model
 // [[Rcpp::export]]
 arma::dmat calculateFitnessMat_arma(const double& dom_par_A, const double& dom_par_B, const double& sel_cof_A, const double& sel_cof_B) {
@@ -252,32 +280,6 @@ arma::dmat calculate_grad_mu(const arma::dmat fts, const arma::dcolvec& hap_frq)
   return grad_mu;
 }
 
-// [[Rcpp::export]]
-List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
-  // ensure RNG gets set/reset
-  RNGScope scope;
-  arma::dmat mu(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  mu.col(0) = int_frq;
-  arma::dmat int_var = arma::zeros<arma::dmat>(4, 4);
-  sigma.slice(0) = int_var;
-  
-  int num_sim = 1e1; // number of simulations per generation
-  arma::dcube path(4, arma::uword(lst_gen - int_gen) + 1, num_sim);
-  for(arma::uword i = 1; i < num_sim; i++) {
-    path.slice(i) = simulateWFM_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
-  }
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat pth_k = path.col(k);
-    mu.col(k) = arma::mean(pth_k, 1);
-    arma::dmat cov_mat = arma::cov(pth_k.t(), pth_k.t());
-    sigma.slice(k) = cov_mat;
-  }
-  
-  // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
-}
 
 // Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Lacerda & Seoighe (2014) 
 // [[Rcpp::export]]
@@ -300,6 +302,7 @@ List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_p
   return List::create(Named("mean", mu),
                       Named("variance", sigma));
 }
+
 
 // Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Terhorst et al. (2015) 
 // [[Rcpp::export]]
@@ -326,6 +329,7 @@ List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_
   return List::create(Named("mean", mu),
                       Named("variance", sigma));
 }
+
 
 // Approximate the first two moments of the two-locus Wright-Fisher model with selection using the extension of Paris et al. (2019) 
 // [[Rcpp::export]]
@@ -374,6 +378,7 @@ arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& var
   }
   return hap_frq_pth;
 }
+
 
 arma::dcolvec calculate_phi(const arma::dcolvec& hap_frq){
   // ensure RNG gets set/reset
@@ -454,6 +459,7 @@ List approximateMoment_logisticnorm_arma(const arma::dmat& m, const arma::dcube&
   return List::create(Named("mean", mean),
                       Named("variance", variance));
 }
+
 
 // Approximate the two-locus Wright-Fisher model with selection using the hierarchical beta distribution
 // [[Rcpp::export]]
