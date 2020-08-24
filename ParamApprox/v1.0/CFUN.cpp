@@ -175,19 +175,20 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
 List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
-  arma::dmat mu(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma(4, 4, arma::uword(lst_gen - int_gen) + 1);
+
+  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
+
   mu.col(0) = int_frq;
-  arma::dmat int_var = arma::zeros<arma::dmat>(4, 4);
-  sigma.slice(0) = int_var;
+  sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   
-  int num_sim = 1e1; // number of simulations per generation
-  arma::dcube path(4, arma::uword(lst_gen - int_gen) + 1, num_sim);
-  for(arma::uword i = 1; i < num_sim; i++) {
+  arma::dcube path(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
+  for(arma::uword i = 1; i < sim_num; i++) {
     path.slice(i) = simulateWFM_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
   }
+
+  arma::dmat pth_k = path.col(k);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat pth_k = path.col(k);
     mu.col(k) = arma::mean(pth_k, 1);
     arma::dmat cov_mat = arma::cov(pth_k.t(), pth_k.t());
     sigma.slice(k) = cov_mat;
