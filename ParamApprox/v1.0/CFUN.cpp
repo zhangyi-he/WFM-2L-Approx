@@ -47,6 +47,31 @@ arma::dmat calculateFitnessMat_arma(const double& sel_cof_A, const double& dom_p
   return fts_mat;
 }
 
+// Calculate the sampling probabilities
+// [[Rcpp::export]]
+arma::dcolvec calculateSamplingProb_arma(const arma::dcolvec& hap_frq, const arma::dmat& fts_mat, const double& rec_rat) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  // declare eta
+  arma::dcolvec eta = arma::ones<arma::dcolvec>(4);
+  eta(0) = -1;
+  // eta(1) = 1;
+  // eta(2) = 1;
+  eta(3) = -1;
+
+  // declare and initialise the sampling probabilities for the Wright-Fisher model
+  arma::dcolvec prob = hap_frq;
+
+  // calculate the haplotype frequencies after natural selection
+  prob = hap_frq % (fts_mat * hap_frq) / arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
+  
+  // calculate the haplotype frequencies after genetic recombination
+  prob = prob + eta * rec_rat * (prob(0) * prob(3) - prob(1) * prob(2));
+
+  return prob;
+}
+
 // Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
 // [[Rcpp::export]]
 arma::dmat simulateWFM_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
@@ -62,23 +87,13 @@ arma::dmat simulateWFM_arma(const arma::dmat& fts_mat, const double& rec_rat, co
   // declare and initialise the haplotype frequencies during a single generation of the life cycle
   arma::dcolvec hap_frq = int_frq;
 
-  // declare eta
-  arma::dcolvec eta = arma::ones<arma::dcolvec>(4);
-  eta(0) = -1;
-  // eta(1) = 1;
-  // eta(2) = 1;
-  eta(3) = -1;
-
   // declare the sampling probabilities
   arma::dcolvec prob(4) = arma::zeros<arma::dcolvec>(4);
   for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    // calculate the haplotype frequencies after natural selection
-    prob = hap_frq % (fts_mat * hap_frq) / arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
-
     // calculate the haplotype frequencies after genetic recombination
-    prob = prob + eta * rec_rat * (prob(0) * prob(3) - prob(1) * prob(2));
+    prob = calculateSamplingProb_arma(hap_frq, fts_mat, rec_rat)
 
-    // reproduction (the Wright-Fisher sampling)
+    // proceed the Wright-Fisher sampling
     IntegerVector hap_cnt(4);
     R::rmultinom(2 * pop_siz, prob.begin(), 4, hap_cnt.begin());
     hap_frq = as<arma::dcolvec>(hap_cnt) / 2 / pop_siz;
@@ -178,17 +193,21 @@ List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& do
 
   arma::dmat fts_mat = calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B);
 
+  // declare the mean vector and variance matrix of the Wright-Fisher model
   arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
 
+  // initialise the mean vector and variance matrix of the Wright-Fisher model
   mu.col(0) = int_frq;
-  sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
+  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
 
+  // simulate the haplotype frequency trajectories according to the Wright-Fisher model
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword i = 1; i < sim_num; i++) {
     frq_pth.slice(i) = simulateWFM_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
   }
 
+  // calculate the mean vector and variance matrix of the Wright-Fisher model
   arma::dmat frq_smp = frq_pth.col(k);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     mu.col(k) = arma::mean(frq_smp, 1);
@@ -200,63 +219,9 @@ List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& do
                       Named("variance", sigma));
 }
 
-
-// Calculate the fitness matrix for the Wright-Fisher model
+// 
 // [[Rcpp::export]]
-arma::dmat calculateFitnessMat_arma(const double& dom_par_A, const double& dom_par_B, const double& sel_cof_A, const double& sel_cof_B) {
-  // ensure RNG gets set/reset
-  RNGScope scope;
-
-  // calculate the fitness
-  arma::dmat fts_mat(4, 4);
-  fts_mat(0, 0) = 1;
-  fts_mat(1, 0) = (1 - dom_par_B * sel_cof_B);
-  fts_mat(2, 0) = (1 - dom_par_A * sel_cof_A);
-  fts_mat(3, 0) = (1 - dom_par_A * sel_cof_A) * (1 - dom_par_B * sel_cof_B);
-  fts_mat(0, 1) = (1 - dom_par_B * sel_cof_B);
-  fts_mat(1, 1) = (1 - sel_cof_B);
-  fts_mat(2, 1) = (1 - dom_par_A * sel_cof_A) * (1 - dom_par_B * sel_cof_B);
-  fts_mat(3, 1) = (1 - dom_par_A * sel_cof_A) * (1 - sel_cof_B);
-  fts_mat(0, 2) = (1 - dom_par_A * sel_cof_A);
-  fts_mat(1, 2) = (1 - dom_par_A * sel_cof_A) * (1 - dom_par_B * sel_cof_B);
-  fts_mat(2, 2) = (1 - sel_cof_A);
-  fts_mat(3, 2) = (1 - sel_cof_A) * (1 - dom_par_B * sel_cof_B);
-  fts_mat(0, 3) = (1 - dom_par_A * sel_cof_A) * (1 - dom_par_B * sel_cof_B);
-  fts_mat(1, 3) = (1 - dom_par_A * sel_cof_A) * (1 - sel_cof_B);
-  fts_mat(2, 3) = (1 - sel_cof_A) * (1 - dom_par_B * sel_cof_B);
-  fts_mat(3, 3) = (1 - sel_cof_A) * (1 - sel_cof_B);
-
-  return fts_mat;
-}
-
-// [[Rcpp::export]]
-arma::dcolvec calculate_p(const double& rec_rat, const arma::dmat fts_mat, const arma::dcolvec& hap_frq){
-  // ensure RNG gets set/reset
-  RNGScope scope;
-
-  // declare eta
-  arma::dcolvec eta(4);
-  eta(0) = -1;
-  eta(1) = 1;
-  eta(2) = 1;
-  eta(3) = -1;
-  arma::dmat gen_frq = hap_frq * hap_frq.t();
-
-  // viability selection
-  gen_frq = (fts_mat % gen_frq) / arma::as_scalar(sum(sum(fts_mat % gen_frq, 0), 1));
-
-  // meiosis (calculate the sampling probability)
-  arma::dcolvec prob = arma::zeros<arma::dcolvec>(4);
-  for(arma::uword i = 0; i < 4; i++) {
-    prob(i) = (sum(gen_frq.row(i)) + sum(gen_frq.col(i))) / 2;
-  }
-  prob = prob + eta * rec_rat * (prob(0) * prob(3) - prob(1) * prob(2));
-
-  return prob;
-}
-
-// [[Rcpp::export]]
-arma::dmat calculate_grad_mu(const arma::dmat fts_mat, const arma::dcolvec& hap_frq){
+arma::dmat calculateJacobianMat_mu(const arma::dcolvec& hap_frq, const arma::dmat fts_mat, const double& rec_rat){
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -265,6 +230,7 @@ arma::dmat calculate_grad_mu(const arma::dmat fts_mat, const arma::dcolvec& hap_
 
   // viability selection
   arma::dcolvec q = sum(fts_mat % gen_frq, 1) / arma::as_scalar(sum(sum(fts_mat % gen_frq, 0), 1));
+
   arma::dmat Q(4, 4);
   // declare eta
   arma::dcolvec eta(4);
@@ -276,9 +242,11 @@ arma::dmat calculate_grad_mu(const arma::dmat fts_mat, const arma::dcolvec& hap_
     Q.col(i) = q + eta * q(3-i);
     eta = eta * (-1);
   }
+
   arma::dmat iden_mat(4,4);
   iden_mat.eye();
   grad_mu = (iden_mat + Q) * (arma::diagmat(hap_frq) * (fts_mat / arma::as_scalar(sum(sum(fts_mat % gen_frq, 0), 1)) - 2 * q / hap_frq * (q / hap_frq).t() ) + arma::diagmat(q / hap_frq) );
+  
   return grad_mu;
 }
 
@@ -288,16 +256,22 @@ arma::dmat calculate_grad_mu(const arma::dmat fts_mat, const arma::dcolvec& hap_
 List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
   // ensure RNG gets set/reset
   RNGScope scope;
-  arma::dmat mu(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  mu.col(0) = int_frq;
-  arma::dmat int_var = arma::zeros<arma::dmat>(4, 4);
-  sigma.slice(0) = int_var;
 
-  for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    mu.col(t) = calculate_p(rec_rat, fts_mat, mu.col(t-1));
-    arma::dmat grad_mu = calculate_grad_mu(fts_mat, mu.col(t-1));
-    sigma.slice(t) = (arma::diagmat(mu.col(t)) - mu.col(t) * (mu.col(t)).t() ) / 2 / pop_siz + grad_mu * sigma.slice(t-1) * grad_mu.t();
+  // declare the mean vector and variance matrix of the Wright-Fisher model
+  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
+
+  // initialise the mean vector and variance matrix of the Wright-Fisher model
+  mu.col(0) = int_frq;
+  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
+
+  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    // approximate the mean vector of the Wright-Fisher model
+    mu.col(k) = calculateSamplingProb_arma(mu.col(k - 1), fts_mat, rec_rat);
+
+    // approximate the variance matrix of the Wright-Fisher model
+    arma::dmat jacobian_mu = calculateJacobianMat_mu(mu.col(k - 1), fts_mat, rec_rat);
+    sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * (mu.col(k)).t()) / 2 / pop_siz + grad_mu * sigma.slice(k - 1) * grad_mu.t();
   }
 
   // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
@@ -311,6 +285,7 @@ List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_p
 List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
   // ensure RNG gets set/reset
   RNGScope scope;
+
   arma::dmat x(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat mu(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat epsilon(4, arma::uword(lst_gen - int_gen) + 1);
@@ -327,6 +302,7 @@ List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_
     mu.col(t) = x.col(t) + epsilon.col(t);
     sigma.slice(t) = 1 / 2 / pop_siz * arma::diagmat(mu.col(t)) - 1 / 2 / pop_siz * mu.col(t) * (mu.col(t)).t() + (1 - 1 / 2 / pop_siz) * grad_mu * sigma.slice(t-1) * grad_mu.t();
   }
+
   // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
   return List::create(Named("mean", mu),
                       Named("variance", sigma));
@@ -338,16 +314,22 @@ List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_
 List approximateMoment_Paris_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
   // ensure RNG gets set/reset
   RNGScope scope;
-  arma::dmat mu(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  mu.col(0) = int_frq;
-  arma::dmat int_var = arma::zeros<arma::dmat>(4, 4);
-  sigma.slice(0) = int_var;
 
-  for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    mu.col(t) = calculate_p(rec_rat, fts_mat, mu.col(t-1));
-    arma::dmat grad_mu = calculate_grad_mu(fts_mat, mu.col(t-1));
-    sigma.slice(t) = (arma::diagmat(mu.col(t)) - mu.col(t) * (mu.col(t)).t() ) / 2 / pop_siz + (1 - 1 / 2 / pop_siz) * grad_mu * sigma.slice(t-1) * grad_mu.t();
+  // declare the mean vector and variance matrix of the Wright-Fisher model
+  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
+
+  // initialise the mean vector and variance matrix of the Wright-Fisher model
+  mu.col(0) = int_frq;
+  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
+
+  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    // approximate the mean vector of the Wright-Fisher model
+    mu.col(k) = calculateSamplingProb_arma(mu.col(k - 1), fts_mat, rec_rat);
+
+    // approximate the variance matrix of the Wright-Fisher model
+    arma::dmat jacobian_mu = calculateJacobianMat_mu(mu.col(k - 1), fts_mat, rec_rat);
+    sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * (mu.col(k)).t()) / 2 / pop_siz + (1 - 1.0 / 2 / pop_siz) * grad_mu * sigma.slice(k - 1) * grad_mu.t();
   }
 
   // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
