@@ -65,7 +65,7 @@ arma::dcolvec calculateSamplingProb_arma(const arma::dcolvec& hap_frq, const arm
 
   // calculate the haplotype frequencies after natural selection
   prob = hap_frq % (fts_mat * hap_frq) / arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
-  
+
   // calculate the haplotype frequencies after genetic recombination
   prob = prob + eta * rec_rat * (prob(0) * prob(3) - prob(1) * prob(2));
 
@@ -219,9 +219,9 @@ List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& do
                       Named("variance", sigma));
 }
 
-// 
+//
 // [[Rcpp::export]]
-arma::dmat calculateJacobianMat_mu(const arma::dcolvec& hap_frq, const arma::dmat fts_mat, const double& rec_rat){
+arma::dmat calculateJacobianMat_mu(const arma::dcolvec& hap_frq, const arma::dmat& fts_mat, const double& rec_rat){
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -246,7 +246,7 @@ arma::dmat calculateJacobianMat_mu(const arma::dcolvec& hap_frq, const arma::dma
   arma::dmat iden_mat(4,4);
   iden_mat.eye();
   grad_mu = (iden_mat + Q) * (arma::diagmat(hap_frq) * (fts_mat / arma::as_scalar(sum(sum(fts_mat % gen_frq, 0), 1)) - 2 * q / hap_frq * (q / hap_frq).t() ) + arma::diagmat(q / hap_frq) );
-  
+
   return grad_mu;
 }
 
