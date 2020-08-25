@@ -341,11 +341,13 @@ List approximateMoment_Paris_arma(const double& sel_cof_A, const double& dom_par
 
 /****** ParamApprox ******/
 // Approximate the two-locus Wright-Fisher model with selection using the normal distribution
+// [[Rcpp::export]]
 List approximatWFM_norm_arma(const arma::dmat& mean, const arma::dcube& variance) {
   // ensure RNG gets set/reset
   RNGScope scope;
-  const arma::dmat mu = mean;
-  const arma::dcube sigma = variance;
+
+  arma::dmat mu = mean;
+  arma::dcube sigma = variance;
 
   // return the parameters of the normal distribution
   return List::create(Named("mean", mu),
@@ -353,58 +355,88 @@ List approximatWFM_norm_arma(const arma::dmat& mean, const arma::dcube& variance
 }
 
 // Simulate the two-locus Wright-Fisher model with selection using the normal approximation
+// [[Rcpp::export]]
 arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
+
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-      frq_pth.col(t) = arma::mvnrnd(mean.col(t), variance.slice(t), sim_num);
+    frq_pth.col(t) = arma::mvnrnd(mean.col(t), variance.slice(t), sim_num);
   }
+
   return frq_pth;
 }
 
 
-arma::dcolvec calculate_phi(const arma::dcolvec& hap_frq){
+// Calculate the additive logistic transformation
+// [[Rcpp::export]]
+arma::dcolvec calculateALT_phi(const arma::dcolvec& phi){
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dcolvec phi(3);
+  arma::dcolvec hap_frq = arma::zeros<arma::dcolvec>(4);
+  hap_frq(0) = exp(phi(0));
+  hap_frq(1) = exp(phi(1));
+  hap_frq(2) = exp(phi(2));
+  hap_frq(3) = 1;
+  hap_frq = arma::normalise(hap_frq);
+
+  // return the additive logistic transformation
+  return hap_frq;
+}
+
+// Calculate the inverse additive logistic transformation
+// [[Rcpp::export]]
+arma::dcolvec calculateInvALT_phi(const arma::dcolvec& hap_frq){
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dcolvec phi = arma::zeros<arma::dcolvec>(3);
   phi(0) = log(hap_frq(0) / hap_frq(3));
   phi(1) = log(hap_frq(1) / hap_frq(3));
   phi(2) = log(hap_frq(2) / hap_frq(3));
+
+  // return the inverse additive logistic transformation
   return phi;
 }
 
-arma::dmat calculate_grad_phi(const arma::dcolvec& hap_frq){
+// Calculate the Jacobian matrix over the inverse additive logistic transformation
+// [[Rcpp::export]]
+arma::dmat calculateJacobianMat_phi(const arma::dcolvec& hap_frq){
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat grad_phi(3, 4);
-  grad_phi(0, 0) = 1 / hap_frq(0);
-  grad_phi(1, 1) = 1 / hap_frq(1);
-  grad_phi(2, 2) = 1 / hap_frq(2);
-  grad_phi(0, 3) = -1 / hap_frq(3);
-  grad_phi(1, 3) = -1 / hap_frq(3);
-  grad_phi(2, 3) = -1 / hap_frq(3);
+  arma::dmat jacobian_mat = arma::zeros<arma::dmat>(3, 4);
+  jacobian_mat(0, 0) = 1 / hap_frq(0);
+  jacobian_mat(1, 1) = 1 / hap_frq(1);
+  jacobian_mat(2, 2) = 1 / hap_frq(2);
+  jacobian_mat(0, 3) = -1 / hap_frq(3);
+  jacobian_mat(1, 3) = -1 / hap_frq(3);
+  jacobian_mat(2, 3) = -1 / hap_frq(3);
 
-  return grad_phi;
+  // return the Jacobian matrix over the inverse additive logistic transformation
+  return jacobian_mat;
 }
 
 // Approximate the two-locus Wright-Fisher model with selection using the logistic normal distribution
+// [[Rcpp::export]]
 List approximatWFM_logisticnorm_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat m(3, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube V(9, 9, arma::uword(lst_gen - int_gen) + 1);
+  // declare and initialise the location and squared scale of the logistic normal distribution
+  arma::dmat m = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube V = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    m.col(t) = calculate_phi(mean.col(t));
-    V.slice(t) = calculate_grad_phi(mean.col(t)) * variance.slice(t) * calculate_grad_phi(mean.col(t)).t();
+    m.col(t) = calculateInvALT_phi(mean.col(t));
+    arma::dmat jacobian_phi = calculateJacobianMat_phi(mean.col(t));
+    V.slice(t) = jacobian_phi * variance.slice(t) * jacobian_phi.t();
   }
 
-  // return the parameters of the logit-normal distribution
-  return List::create(Named("mean", m),
-                      Named("variance", V));
+  // return the parameters of the logistic normal distribution
+  return List::create(Named("location", m),
+                      Named("squared_scale", V));
 }
 
 // Simulate the two-locus Wright-Fisher model with selection using the logistic normal approximation
@@ -478,10 +510,12 @@ List approximatWFM_hierarchicalbeta_arma(const arma::dmat& mean, const arma::dcu
                       Named("beta", beta));
 }
 
+
 // Simulate the two-locus Wright-Fisher model with selection using the hierarchical beta approximation
 arma::dcube simulateWFM_hierarchicalbeta_arma(const arma::dmat& alpha, const arma::dcube& beta, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
+
   arma::dcube Z(3, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword t = 0; t < arma::uword(lst_gen - int_gen) + 1; t++) {
     arma::dcolvec alpha_t = alpha.col(t);
@@ -489,7 +523,7 @@ arma::dcube simulateWFM_hierarchicalbeta_arma(const arma::dmat& alpha, const arm
     arma::dmat Z_t(3, sim_num);
     arma::drowvec Z_0_t = Rcpp::rbeta(sim_num, alpha_t(0), beta_t(0));
     arma::drowvec Z_1_t = Rcpp::rbeta(sim_num, alpha_t(1), beta_t(1));
-    arma::drowvec Z_2_t = Rcpp::rbeta(sim_num, alpha_t(0), beta_t(0));
+    arma::drowvec Z_2_t = Rcpp::rbeta(sim_num, alpha_t(2), beta_t(2));
     Z_t.row(0) = Z_0_t;
     Z_t.row(1) = Z_1_t;
     Z_t.row(2) = Z_2_t;
@@ -501,6 +535,7 @@ arma::dcube simulateWFM_hierarchicalbeta_arma(const arma::dmat& alpha, const arm
   frq_pth.row(2) = Z.row(2) - Z.row(0) % Z.row(2);
   arma::dcube ones_cube = arma::ones<arma::dcube>(3, arma::uword(lst_gen - int_gen) + 1, sim_num);
   frq_pth.row(3) = (ones_cube.row(0) - Z.row(0)) % (ones_cube.row(0) - Z.row(2));
+
   return frq_pth;
 }
 
@@ -508,6 +543,7 @@ arma::dcube simulateWFM_hierarchicalbeta_arma(const arma::dmat& alpha, const arm
 List approximateMoment_hierarchicalbeta_arma(const arma::dmat& alpha, const arma::dmat& beta, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
+
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
@@ -540,6 +576,7 @@ List approximateMoment_hierarchicalbeta_arma(const arma::dmat& alpha, const arma
     mean.col(t) = mu;
     variance.slice(t) = sigma;
   }
+
   // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
   return List::create(Named("mean", mean),
                       Named("variance", variance));
