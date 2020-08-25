@@ -547,39 +547,39 @@ List approximateMoment_hierarchicalbeta_arma(const arma::dmat& alpha, const arma
   // ensure RNG gets set/reset
   RNGScope scope;
 
+  //
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
 
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    //
     arma::dcolvec m = alpha.col(k) / (alpha.col(k) + beta.col(k));
     arma::dcolvec V = alpha.col(k) % beta.col(k) / (alpha.col(k) + beta.col(k)) / (alpha.col(k) + beta.col(k)) / (alpha.col(k) + beta.col(k) + 1);
 
-    arma::dcolvec mu = arma::zeros<arma::dcolvec>(4);
-    mu(0) = m(0) * m(1);
-    mu(1) = m(0) * (1.0 - m(1));
-    mu(2) = (1.0 - m(0)) * m(2);
-    mu(3) = (1.0 - m(0)) * (1.0 - m(2));
+    //
+    mean(0, k) = m(0) * m(1);
+    mean(1, k) = m(0) * (1.0 - m(1));
+    mean(2, k) = (1.0 - m(0)) * m(2);
+    mean(3, k) = (1.0 - m(0)) * (1.0 - m(2));
 
+    //
     arma::dmat sigma = arma::zeros<arma::dmat>(4, 4);
-    sigma(0, 0) = V(0) * m(1) * m(1) + (V(0) + m(0) * m(0)) * V(1);
-    sigma(0, 1) = -(V(0) + m(0) * m(0)) * V(1) + V(0) * m(1) * (1 - m(1));
-    sigma(0, 2) = -V(0) * m(1) * mt(2);
-    sigma(0, 3) = -V(0) * m(1) * (1 - m(2));
-    sigma(1, 0) = sigma(0, 1);
-    sigma(1, 1) = V(0) * (1 - m(1)) * (1 - m(1)) + (V(0) + m(0) * m(0)) * V(1);
-    sigma(1, 2) = -V(0) * (1 - m(1)) * m(2);
-    sigma(1, 3) = -V(0) * (1 - m(1)) * (1 - m(2));
-    sigma(2, 0) = sigma(0, 2);
-    sigma(2, 1) = sigma(1, 2);
-    sigma(2, 2) = V(0) * m(2) * m(2) + (V(0) + (1 - m(0)) * (1 - m(0))) * V(2);
-    sigma(2, 3) = -(V(0) + (1 - m(0)) * (1 - m(0))) * V(2) + V(0) * m(2) * (1 - m(2));
-    sigma(3, 0) = sigma(0, 3);
-    sigma(3, 1) = sigma(1, 3);
-    sigma(3, 2) = sigma(2, 3);
-    sigma(3, 3) = V(0) * (1 - m(2)) * (1 - m(2)) + (V(0) + (1 - m(0)) * (1 - m(0))) * V(2);
-
-    mean.col(k) = mu;
-    variance.slice(k) = sigma;
+    sigma(0, 0, k) = V(0) * m(1) * m(1) + (V(0) + m(0) * m(0)) * V(1);
+    sigma(0, 1, k) = -(V(0) + m(0) * m(0)) * V(1) + V(0) * m(1) * (1 - m(1));
+    sigma(0, 2, k) = -V(0) * m(1) * mt(2);
+    sigma(0, 3, k) = -V(0) * m(1) * (1 - m(2));
+    sigma(1, 0, k) = sigma(0, 1);
+    sigma(1, 1, k) = V(0) * (1 - m(1)) * (1 - m(1)) + (V(0) + m(0) * m(0)) * V(1);
+    sigma(1, 2, k) = -V(0) * (1 - m(1)) * m(2);
+    sigma(1, 3, k) = -V(0) * (1 - m(1)) * (1 - m(2));
+    sigma(2, 0, k) = sigma(0, 2);
+    sigma(2, 1, k) = sigma(1, 2);
+    sigma(2, 2, k) = V(0) * m(2) * m(2) + (V(0) + (1 - m(0)) * (1 - m(0))) * V(2);
+    sigma(2, 3, k) = -(V(0) + (1 - m(0)) * (1 - m(0))) * V(2) + V(0) * m(2) * (1 - m(2));
+    sigma(3, 0, k) = sigma(0, 3);
+    sigma(3, 1, k) = sigma(1, 3);
+    sigma(3, 2, k) = sigma(2, 3);
+    sigma(3, 3, k) = V(0) * (1 - m(2)) * (1 - m(2)) + (V(0) + (1 - m(0)) * (1 - m(0))) * V(2);
   }
 
   // return the approximations for the mean and variance of the hierarchical beta approximation at each generation from int_gen to lst_gen
