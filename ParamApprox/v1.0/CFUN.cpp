@@ -221,7 +221,7 @@ List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& do
 
 //
 // [[Rcpp::export]]
-arma::dmat calculateJacobianMat_mu(const arma::dcolvec& hap_frq, const arma::dmat& fts_mat, const double& rec_rat){
+arma::dmat calculateJacobianMean_arma(const arma::dcolvec& hap_frq, const arma::dmat& fts_mat, const double& rec_rat){
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -270,7 +270,7 @@ List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_p
     mu.col(k) = calculateSamplingProb_arma(mu.col(k - 1), fts_mat, rec_rat);
 
     // approximate the variance matrix of the Wright-Fisher model
-    arma::dmat jacobian_mu = calculateJacobianMat_mu(mu.col(k - 1), fts_mat, rec_rat);
+    arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * (mu.col(k)).t()) / 2 / pop_siz + grad_mu * sigma.slice(k - 1) * grad_mu.t();
   }
 
@@ -328,7 +328,7 @@ List approximateMoment_Paris_arma(const double& sel_cof_A, const double& dom_par
     mu.col(k) = calculateSamplingProb_arma(mu.col(k - 1), fts_mat, rec_rat);
 
     // approximate the variance matrix of the Wright-Fisher model
-    arma::dmat jacobian_mu = calculateJacobianMat_mu(mu.col(k - 1), fts_mat, rec_rat);
+    arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * (mu.col(k)).t()) / 2 / pop_siz + (1 - 1.0 / 2 / pop_siz) * grad_mu * sigma.slice(k - 1) * grad_mu.t();
   }
 
@@ -371,7 +371,7 @@ arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& var
 
 // Calculate the additive logistic transformation
 // [[Rcpp::export]]
-arma::dcolvec calculateALT_phi(const arma::dcolvec& phi){
+arma::dcolvec calculateALT_arma(const arma::dcolvec& phi){
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -388,7 +388,7 @@ arma::dcolvec calculateALT_phi(const arma::dcolvec& phi){
 
 // Calculate the inverse additive logistic transformation
 // [[Rcpp::export]]
-arma::dcolvec calculateInvALT_phi(const arma::dcolvec& hap_frq){
+arma::dcolvec calculateInvALT_arma(const arma::dcolvec& hap_frq){
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -403,7 +403,7 @@ arma::dcolvec calculateInvALT_phi(const arma::dcolvec& hap_frq){
 
 // Calculate the Jacobian matrix over the inverse additive logistic transformation
 // [[Rcpp::export]]
-arma::dmat calculateJacobianMat_phi(const arma::dcolvec& hap_frq){
+arma::dmat calculateJacobianInvALT_arma(const arma::dcolvec& hap_frq){
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -429,8 +429,8 @@ List approximatWFM_logisticnorm_arma(const arma::dmat& mean, const arma::dcube& 
   arma::dmat m = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube V = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    m.col(t) = calculateInvALT_phi(mean.col(t));
-    arma::dmat jacobian_phi = calculateJacobianMat_phi(mean.col(t));
+    m.col(t) = calculateInvALT_arma(mean.col(t));
+    arma::dmat jacobian_phi = calculateJacobianInvALT_arma(mean.col(t));
     V.slice(t) = jacobian_phi * variance.slice(t) * jacobian_phi.t();
   }
 
