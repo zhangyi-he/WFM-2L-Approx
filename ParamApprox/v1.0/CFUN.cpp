@@ -484,61 +484,57 @@ List approximatWFM_hierarchicalbeta_arma(const arma::dmat& mean, const arma::dcu
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat m(3, arma::uword(lst_gen - int_gen) + 1);
-  m.row(0) = mean.row(0) + mean.row(1);
-  m.row(1) = mean.row(0) / (mean.row(0) + mean.row(1));
-  m.row(2) = mean.row(2) / (mean.row(2) + mean.row(3));
+  arma::dmat m = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
+  // m.row(0) = mean.row(0) + mean.row(1);
+  // m.row(1) = mean.row(0) / (mean.row(0) + mean.row(1));
+  // m.row(2) = mean.row(2) / (mean.row(2) + mean.row(3));
+  arma::dmat V = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
 
-  arma::dcube V(3, 3, arma::uword(lst_gen - int_gen) + 1);
+  arma::dmat alpha = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
+  arma::dmat beta = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
 
-  arma::dmat alpha(3, arma::uword(lst_gen - int_gen) + 1);
-  arma::dmat beta(3, arma::uword(lst_gen - int_gen) + 1);
+  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    //
+    m(0, k) = mean(0, k) + mean(1, k);
+    m(1, k) = mean(0, k) / (mean(0, k) + mean(1, k));
+    m(2, k) = mean(2, k) / (mean(2, k) + mean(3, k));
 
-  for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    arma::dcolvec col_m(3);
-    arma::dcolvec diag_V(3);
+    //
+    V(0, k) = (variance(0, 0, k) - variance(1, 1, k)) / (m(1, k) * m(1, k) - (1 - m(1, k)) * (1 - m(1, k)));
+    V(1, k) = (variance(0, 0, k) + variance(1, 1, k) - (m(1, k) * m(1, k) + (1 - m(1, k)) * (1 - m(1, k))) * V(0, k)) / 2 / (m(0, k) * m(0, k) + V(0, k));
+    V(2, k) = (variance(2, 2, k) + variance(3, 3, k) - (m(2, k) * m(2, k) + (1 - m(2, k)) * (1 - m(2, k))) * V(0, k)) / 2 / ((1 - m(0, k)) * (1 - m(0, k)) + V(0, k));
 
-    diag_V(0) = (variance(0, 0, t) - variance(1, 1, t)) / (col_m(1) * col_m(1) - (1 - col_m(1)) * (1 - col_m(1)));
-    diag_V(1) = (variance(0, 0, t) + variance(1, 1, t) - (col_m(1) * col_m(1) + (1 - col_m(1)) * (1 - col_m(1))) * diag_V(0)) / 2 / (col_m(0) * col_m(0) + diag_V(0));
-    diag_V(2) = (variance(2, 2, t) + variance(3, 3, t) - (col_m(2) * col_m(2) + (1 - col_m(2)) * (1 - col_m(2))) * diag_V(0)) / 2 / ((1 - col_m(0)) * (1 - col_m(0)) + diag_V(0));
-    m.col(t) = col_m;
-    V.slice(t) = arma::diagmat(diag_V);
-    alpha.col(t) = (col_m % (1 - col_m) / diag_V - 1 ) % col_m;
-    beta.col(t) = (col_m % (1 - col_m) / diag_V - 1 ) % (1 - col_m);
+    //
+    alpha.col(k) = (m.col(k) % (1 - m.col(k)) / V.col(k) - 1) % m.col(k);
+    beta.col(k) = (m.col(k) % (1 - m.col(k)) / V.col(k) - 1) % (1 - m.col(k));
   }
-
 
   // return the parameters of the hierarchical beta distribution
   return List::create(Named("alpha", alpha),
                       Named("beta", beta));
 }
 
-
 // Simulate the two-locus Wright-Fisher model with selection using the hierarchical beta approximation
 arma::dcube simulateWFM_hierarchicalbeta_arma(const arma::dmat& alpha, const arma::dmat& beta, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
+  //
   arma::dcube Z(3, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  for(arma::uword t = 0; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    arma::dcolvec alpha_t = alpha.col(t);
-    arma::dcolvec beta_t = beta.col(t);
-    arma::dmat Z_t(3, sim_num);
-    arma::drowvec Z_0_t = Rcpp::rbeta(sim_num, alpha_t(0), beta_t(0));
-    arma::drowvec Z_1_t = Rcpp::rbeta(sim_num, alpha_t(1), beta_t(1));
-    arma::drowvec Z_2_t = Rcpp::rbeta(sim_num, alpha_t(2), beta_t(2));
-    Z_t.row(0) = Z_0_t;
-    Z_t.row(1) = Z_1_t;
-    Z_t.row(2) = Z_2_t;
-    Z.col(t) = Z_t;
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    Z.tube(0, k) = Rcpp::rbeta(sim_num, alpha(0, k), beta(0, k));
+    Z.tube(1, k) = Rcpp::rbeta(sim_num, alpha(1, k), beta(1, k));
+    Z.tube(2, k) = Rcpp::rbeta(sim_num, alpha(2, k), beta(2, k));
   }
+
+  //
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   frq_pth.row(0) = Z.row(0) % Z.row(1);
-  frq_pth.row(1) = Z.row(0) - Z.row(0) % Z.row(1);
-  frq_pth.row(2) = Z.row(2) - Z.row(0) % Z.row(2);
-  arma::dcube ones_cube = arma::ones<arma::dcube>(3, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  frq_pth.row(3) = (ones_cube.row(0) - Z.row(0)) % (ones_cube.row(0) - Z.row(2));
+  frq_pth.row(1) = Z.row(0) % (1 - Z.row(1));
+  frq_pth.row(2) = (1 - Z.row(0)) % Z.row(2);
+  frq_pth.row(3) = (1 - Z.row(0)) % (1 - Z.row(2));
 
+  //
   return frq_pth;
 }
 
@@ -582,7 +578,7 @@ List approximateMoment_hierarchicalbeta_arma(const arma::dmat& alpha, const arma
     sigma(3, 3, k) = V(0) * (1 - m(2)) * (1 - m(2)) + (V(0) + (1 - m(0)) * (1 - m(0))) * V(2);
   }
 
-  // return the approximations for the mean and variance of the hierarchical beta approximation at each generation from int_gen to lst_gen
+  // return the approximations for the mean and variance of the hierarchical beta approximation
   return List::create(Named("mean", mean),
                       Named("variance", variance));
 }
