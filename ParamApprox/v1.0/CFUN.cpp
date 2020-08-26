@@ -245,29 +245,29 @@ arma::dmat calculateJacobianMean_arma(const arma::dcolvec& hap_frq, const arma::
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat grad_mu(4, 4);
-  arma::dmat gen_frq = hap_frq * hap_frq.t();
+  //
+  double mean_fitness = arma::as_scalar(sum(sum(fts_mat % (hap_frq * hap_frq.t()), 0), 1));
+  arma::dcolvec marginal_fitness = sum(fts_mat % (hap_frq * hap_frq.t()), 1);
 
-  // viability selection
-  arma::dcolvec q = sum(fts_mat % gen_frq, 1) / arma::as_scalar(sum(sum(fts_mat % gen_frq, 0), 1));
-
-  arma::dmat Q(4, 4);
   // declare eta
   arma::dcolvec eta(4);
   eta(0) = -1;
   eta(1) = 1;
   eta(2) = 1;
   eta(3) = -1;
-  for(arma::uword i = 1; i < 4; i++) {
-    Q.col(i) = q + eta * q(3-i);
-    eta = eta * (-1);
+
+  // 
+  arma::dcolvec q = mean_fitness % hap_frq;
+  arma::dmat Q = arma::zeros<arma::dmat>(4, 4);
+  for(arma::uword i = 0; i < 4; i++) {
+    Q.col(i) = q + pow(-1, i) * eta * q(3 - i);
   }
 
-  arma::dmat iden_mat(4,4);
-  iden_mat.eye();
-  grad_mu = (iden_mat + Q) * (arma::diagmat(hap_frq) * (fts_mat / arma::as_scalar(sum(sum(fts_mat % gen_frq, 0), 1)) - 2 * q / hap_frq * (q / hap_frq).t() ) + arma::diagmat(q / hap_frq) );
+  //
+  arma::dmat jacobian_mu = (arma::eye(4, 4) + rec_rat * Q) * (arma::diagmat(hap_frq) * (fts_mat / mean_fitness - 2 * (marginal_fitness / mean_fitness) * (marginal_fitness.t() / mean_fitness)) + arma::diagmat(marginal_fitness / mean_fitness));
 
-  return grad_mu;
+  //
+  return jacobian_mu;
 }
 
 // Approximate the first two moments of the Wright-Fisher model using the extension of Lacerda & Seoighe (2014)
@@ -300,24 +300,28 @@ List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat x(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dmat mu(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dmat epsilon(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  mu.col(0) = int_frq;
-  x.col(0) = int_frq;
-  arma::dmat int_var = arma::zeros<arma::dmat>(4, 4);
-  sigma.slice(0) = int_var;
+  //
+  arma::dmat x = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dmat epsilon = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
 
-  for(arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
-    x.col(t) = calculate_p(rec_rat, fts_mat, x.col(t-1));
-    arma::dmat grad_mu = calculate_grad_mu(fts_mat, x.col(t-1));
-    epsilon.col(t) = grad_mu * epsilon.col(t-1);
-    mu.col(t) = x.col(t) + epsilon.col(t);
-    sigma.slice(t) = 1 / 2 / pop_siz * arma::diagmat(mu.col(t)) - 1 / 2 / pop_siz * mu.col(t) * (mu.col(t)).t() + (1 - 1 / 2 / pop_siz) * grad_mu * sigma.slice(t-1) * grad_mu.t();
+  //
+  x.col(0) = int_frq;
+  // epsilon.col(0) = arma::zeros<arma::dcolvec>(4);
+  mu.col(0) = int_frq;
+  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
+
+  //
+  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    x.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat);
+    arma::dmat jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
+    epsilon.col(k) = jacobian_mu * epsilon.col(k - 1);
+    mu.col(k) = x.col(k) + epsilon.col(k);
+    sigma.slice(k) = 1.0 / 2 / pop_siz * arma::diagmat(mu.col(k)) - 1.0 / 2 / pop_siz * mu.col(k) * mu.col(k).t() + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
   }
 
-  // return the approximations for the mean and variance of the Wright-Fisher model at each generation from int_gen to lst_gen
+  // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
   return List::create(Named("mean", mu),
                       Named("variance", sigma));
 }
@@ -403,16 +407,16 @@ arma::dcube calculateJacobianLocation_arma(const arma::dmat& hap_frq){
   RNGScope scope;
 
   // declare and calculate the Jacobian matrix over the location vector
-  arma::dcube jacobian_mat = arma::zeros<arma::dcube>(3, 4, hap_frq.n_cols);
-  jacobian_mat.tube(0, 0) = 1.0 / hap_frq.row(0);
-  jacobian_mat.tube(1, 1) = 1.0 / hap_frq.row(1);
-  jacobian_mat.tube(2, 2) = 1.0 / hap_frq.row(2);
-  jacobian_mat.tube(0, 3) = -1.0 / hap_frq.row(3);
-  jacobian_mat.tube(1, 3) = -1.0 / hap_frq.row(3);
-  jacobian_mat.tube(2, 3) = -1.0 / hap_frq.row(3);
+  arma::dcube jacobian_phi = arma::zeros<arma::dcube>(3, 4, hap_frq.n_cols);
+  jacobian_phi.tube(0, 0) = 1.0 / hap_frq.row(0);
+  jacobian_phi.tube(1, 1) = 1.0 / hap_frq.row(1);
+  jacobian_phi.tube(2, 2) = 1.0 / hap_frq.row(2);
+  jacobian_phi.tube(0, 3) = -1.0 / hap_frq.row(3);
+  jacobian_phi.tube(1, 3) = -1.0 / hap_frq.row(3);
+  jacobian_phi.tube(2, 3) = -1.0 / hap_frq.row(3);
 
   // return the Jacobian matrix over the location vector
-  return jacobian_mat;
+  return jacobian_phi;
 }
 
 // Approximate the Wright-Fisher model using the logistic normal distribution
