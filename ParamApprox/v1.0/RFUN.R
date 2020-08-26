@@ -23,7 +23,7 @@ library("compiler")
 #enableJIT(1)
 
 # call C++ functions
-sourceCpp("./ParamApprox/v1.0/CFUN_2L.cpp")
+sourceCpp("./ParamApprox/v1.0/CFUN.cpp")
 
 ################################################################################
 
@@ -115,7 +115,7 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 
 ########################################
 
-#' Approximate the two-locus Wright-Fisher model with selection using the logitic normal 
+#' Approximate the two-locus Wright-Fisher model with selection using the logitic normal
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
