@@ -25,7 +25,7 @@ arma::dmat calculateFitnessMat_arma(const double& sel_cof_A, const double& dom_p
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare and calculate the fitness matrix
+  // calculate the fitness matrix
   arma::dmat fts_mat = arma::ones<arma::dmat>(4, 4);
   // fts_mat(0, 0) = 1;
   fts_mat(1, 0) = (1 - dom_par_B * sel_cof_B);
@@ -54,14 +54,10 @@ arma::dcolvec calculateSamplingProb_arma(const arma::dcolvec& hap_frq, const arm
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare eta
-  arma::dcolvec eta = arma::ones<arma::dcolvec>(4);
-  eta(0) = -1;
-  // eta(1) = 1;
-  // eta(2) = 1;
-  eta(3) = -1;
+  // initialise eta
+  arma::dcolvec eta = {-1.0, 1.0, 1.0, -1.0};
 
-  // declare and calculate the sampling probabilities
+  // calculate the sampling probabilities
   arma::dcolvec prob = hap_frq;
   prob = hap_frq % (fts_mat * hap_frq) / arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
   prob = prob + eta * rec_rat * (prob(0) * prob(3) - prob(1) * prob(2));
@@ -82,19 +78,16 @@ arma::dmat simulateWFM_arma(const arma::dmat& fts_mat, const double& rec_rat, co
   // initialise the haplotype frequencies in generation 0
   frq_pth.col(0) = int_frq;
 
-  // declare and initialise the haplotype frequencies during a single generation of the life cycle
-  arma::dcolvec hap_frq = int_frq;
-
   // simulate the haplotype frequency trajectories
+  arma::dcolvec hap_frq = int_frq;
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    // calculate the haplotype frequencies after genetic recombination
+    // calculate the sampling probabilities
     arma::dcolvec prob = calculateSamplingProb_arma(hap_frq, fts_mat, rec_rat);
 
     // proceed the Wright-Fisher sampling
     IntegerVector hap_cnt(4);
     R::rmultinom(2 * pop_siz, prob.begin(), 4, hap_cnt.begin());
     hap_frq = as<arma::dcolvec>(hap_cnt) / 2 / pop_siz;
-
     frq_pth.col(k) = hap_frq;
   }
 
@@ -116,9 +109,9 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
   double scl_sel_cof_B = 2 * pop_siz * sel_cof_B;
   double scl_rec_rat = 4 * pop_siz * rec_rat;
 
-  // declare delta t
+  // calculate delta t
   double dt = 1.0 / (2 * pop_siz) / ptn_num;
-  // declare delta W
+  // generate delta W
   arma::dmat dW = pow(dt, 0.5) * arma::randn<arma::dmat>(6, arma::uword(lst_gen - int_gen) * ptn_num);
 
   // declare the haplotype frequency trajectories
@@ -127,6 +120,7 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
   // initialise the haplotype frequencies in generation 0
   frq_pth.col(0) = int_frq;
 
+  // simulate the haplotype frequency trajectories
   for (arma::uword t = 1; t < arma::uword(lst_gen - int_gen) * ptn_num + 1; t++) {
     // calculate the drift coefficient vector
     arma::dcolvec mu = arma::zeros<arma::dcolvec>(4);
@@ -223,14 +217,10 @@ arma::dcolvec calculateMean_arma(const arma::dcolvec& hap_frq, const arma::dmat&
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare eta
-  arma::dcolvec eta = arma::ones<arma::dcolvec>(4);
-  eta(0) = -1;
-  // eta(1) = 1;
-  // eta(2) = 1;
-  eta(3) = -1;
+  // initialise eta
+  arma::dcolvec eta = {-1.0, 1.0, 1.0, -1.0};
 
-  // declare and calculate the mean vector
+  // calculate the mean vector
   arma::dcolvec mu = hap_frq;
   mu = hap_frq % (fts_mat * hap_frq) / arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
   mu = mu + eta * rec_rat * (mu(0) * mu(3) - mu(1) * mu(2));
@@ -239,34 +229,30 @@ arma::dcolvec calculateMean_arma(const arma::dcolvec& hap_frq, const arma::dmat&
   return mu;
 }
 
-// Calculate Jacobian matrix over the mean vector for the Wright-Fisher model
+// Calculate the Jacobian matrix over the mean vector for the Wright-Fisher model
 // [[Rcpp::export]]
 arma::dmat calculateJacobianMean_arma(const arma::dcolvec& hap_frq, const arma::dmat& fts_mat, const double& rec_rat){
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  //
+  // calculate the marginal and mean fitness
+  arma::dcolvec marginal_fitness = sum(fts_mat * hap_frq, 1);
   double mean_fitness = arma::as_scalar(sum(sum(fts_mat % (hap_frq * hap_frq.t()), 0), 1));
-  arma::dcolvec marginal_fitness = sum(fts_mat % (hap_frq * hap_frq.t()), 1);
 
-  // declare eta
-  arma::dcolvec eta(4);
-  eta(0) = -1;
-  eta(1) = 1;
-  eta(2) = 1;
-  eta(3) = -1;
+  // initialise eta
+  arma::dcolvec eta = {-1.0, 1.0, 1.0, -1.0};
 
   //
-  arma::dcolvec q = mean_fitness * hap_frq;
+  arma::dcolvec q = (marginal_fitness % hap_frq) / mean_fitness;
   arma::dmat Q = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword i = 0; i < 4; i++) {
     Q.col(i) = q + pow(-1, i) * eta * q(3 - i);
   }
 
-  //
+  // calculate the Jacobian matrix over the mean vector
   arma::dmat jacobian_mu = (arma::eye(4, 4) + rec_rat * Q) * (arma::diagmat(hap_frq) * (fts_mat / mean_fitness - 2 * (marginal_fitness / mean_fitness) * (marginal_fitness.t() / mean_fitness)) + arma::diagmat(marginal_fitness / mean_fitness));
 
-  //
+  // return the Jacobian matrix over the mean vector
   return jacobian_mu;
 }
 
@@ -284,8 +270,8 @@ List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_p
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
+    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) / 2 / pop_siz + jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
   }
 
@@ -300,22 +286,20 @@ List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  //
+  // declare the mean vector and variance matrix
   arma::dmat x = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat epsilon = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
 
-  //
+  // calculate the mean vector and variance matrix
   x.col(0) = int_frq;
   // epsilon.col(0) = arma::zeros<arma::dcolvec>(4);
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
-
-  //
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    x.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat);
     arma::dmat jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
+    x.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat);
     epsilon.col(k) = jacobian_mu * epsilon.col(k - 1);
     mu.col(k) = x.col(k) + epsilon.col(k);
     sigma.slice(k) = 1.0 / 2 / pop_siz * arma::diagmat(mu.col(k)) - 1.0 / 2 / pop_siz * mu.col(k) * mu.col(k).t() + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
@@ -340,8 +324,8 @@ List approximateMoment_Paris_arma(const double& sel_cof_A, const double& dom_par
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
+    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) / 2 / pop_siz + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
   }
 
@@ -390,7 +374,7 @@ arma::dmat calculateLocation_arma(const arma::dmat& hap_frq){
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare and calculate the location vector
+  // calculate the location vector
   arma::dmat phi_frq = arma::zeros<arma::dmat>(3, hap_frq.n_cols);
   phi_frq.row(0) = log(hap_frq.row(0) / hap_frq.row(3));
   phi_frq.row(1) = log(hap_frq.row(1) / hap_frq.row(3));
@@ -406,7 +390,7 @@ arma::dcube calculateJacobianLocation_arma(const arma::dmat& hap_frq){
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare and calculate the Jacobian matrix over the location vector
+  // calculate the Jacobian matrix over the location vector
   arma::dcube jacobian_phi = arma::zeros<arma::dcube>(3, 4, hap_frq.n_cols);
   jacobian_phi.tube(0, 0) = 1.0 / hap_frq.row(0);
   jacobian_phi.tube(1, 1) = 1.0 / hap_frq.row(1);
@@ -425,10 +409,10 @@ List approximatWFM_LogisticNorm_arma(const arma::dmat& mean, const arma::dcube& 
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare and calculate the parameters of the logistic normal approximation
+  // calculate the parameters of the logistic normal approximation
+  arma::dcube jacobian_location = calculateJacobianLocation_arma(mean);
   arma::dmat location = calculateLocation_arma(mean);
   arma::dcube squared_scale = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube jacobian_location = calculateJacobianLocation_arma(mean);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     squared_scale.slice(k) = jacobian_location.slice(k) * variance.slice(k) * jacobian_location.slice(k).t();
   }
@@ -444,7 +428,7 @@ arma::dmat calculateALT_arma(const arma::dmat& phi_frq){
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare and calculate the additive logistic transformation
+  // calculate the additive logistic transformation
   arma::dmat hap_frq = arma::zeros<arma::dmat>(4, phi_frq.n_cols);
   hap_frq.row(0) = exp(phi_frq.row(0));
   hap_frq.row(1) = exp(phi_frq.row(1));
@@ -480,7 +464,7 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
   // simulate the haplotype frequency trajectories
   arma::dcube frq_pth = simulateWFM_LogisticNorm_arma(location, squared_scale, int_gen, lst_gen, sim_num);
 
-  // calculate the mean vector and variance matrix of the logistic normal approximation
+  // calculate the mean vector and variance matrix
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
@@ -500,7 +484,7 @@ List approximatWFM_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcu
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // declare and calculate the parameters of the hierarchical beta approximation
+  // calculate the parameters of the hierarchical beta approximation
   arma::dmat alpha = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat beta = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
@@ -531,7 +515,7 @@ arma::dcube simulateWFM_HierarchicalBeta_arma(const arma::dmat& alpha, const arm
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // simulate the haplotype frequency trajectories under the hierarchical beta approximation
+  // simulate the haplotype frequency trajectories
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     arma::dmat psi_frq = arma::zeros<arma::dmat>(3, sim_num);
@@ -554,21 +538,21 @@ List approximateMoment_HierarchicalBeta_arma(const arma::dmat& alpha, const arma
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // calculate the mean vector and variance matrix of the hierarchical beta approximation
+  // calculate the mean vector and variance matrix
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    //
+    // calculate the mean and variance of the beta distributions
     arma::dcolvec m = alpha.col(k) / (alpha.col(k) + beta.col(k));
     arma::dcolvec V = alpha.col(k) % beta.col(k) / (alpha.col(k) + beta.col(k)) / (alpha.col(k) + beta.col(k)) / (alpha.col(k) + beta.col(k) + 1);
 
-    //
+    // calculate the mean vector
     mean(0, k) = m(0) * m(1);
     mean(1, k) = m(0) * (1.0 - m(1));
     mean(2, k) = (1.0 - m(0)) * m(2);
     mean(3, k) = (1.0 - m(0)) * (1.0 - m(2));
 
-    //
+    // calculate the variance matrix
     variance(0, 0, k) = V(0) * m(1) * m(1) + (V(0) + m(0) * m(0)) * V(1);
     variance(0, 1, k) = -(V(0) + m(0) * m(0)) * V(1) + V(0) * m(1) * (1 - m(1));
     variance(0, 2, k) = -V(0) * m(1) * m(2);
