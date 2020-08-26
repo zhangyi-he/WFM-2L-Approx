@@ -6,7 +6,7 @@
 # set the directory
 setwd("~/Documents/GitHub/WFM-2L-Approx")
 
-source("./ParamApprox/v1.0/RFUN_2L.R")
+source("./ParamApprox/v1.0/RFUN.R")
 
 #install.packages("RColorBrewer")
 library("RColorBrewer")
