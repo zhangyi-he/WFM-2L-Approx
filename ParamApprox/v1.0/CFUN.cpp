@@ -88,7 +88,7 @@ arma::dmat simulateWFM_arma(const arma::dmat& fts_mat, const double& rec_rat, co
   // simulate the haplotype frequency trajectories
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     // calculate the haplotype frequencies after genetic recombination
-    arma::dcolvec prob = calculateSamplingProb_arma(hap_frq, fts_mat, rec_rat)
+    arma::dcolvec prob = calculateSamplingProb_arma(hap_frq, fts_mat, rec_rat);
 
     // proceed the Wright-Fisher sampling
     IntegerVector hap_cnt(4);
@@ -206,8 +206,8 @@ List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& do
   // calculate the mean vector and variance matrix
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4)
-  arma::dmat frq_smp = frq_pth.col(k);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    arma::dmat frq_smp = frq_pth.col(k);
     mu.col(k) = arma::mean(frq_smp, 1);
     sigma.slice(k) = arma::cov(frq_smp.t(), frq_smp.t());
   }
@@ -256,8 +256,8 @@ arma::dmat calculateJacobianMean_arma(const arma::dcolvec& hap_frq, const arma::
   eta(2) = 1;
   eta(3) = -1;
 
-  // 
-  arma::dcolvec q = mean_fitness % hap_frq;
+  //
+  arma::dcolvec q = mean_fitness * hap_frq;
   arma::dmat Q = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword i = 0; i < 4; i++) {
     Q.col(i) = q + pow(-1, i) * eta * q(3 - i);
@@ -450,7 +450,7 @@ arma::dmat calculateALT_arma(const arma::dmat& phi_frq){
   hap_frq.row(1) = exp(phi_frq.row(1));
   hap_frq.row(2) = exp(phi_frq.row(2));
   hap_frq.row(3) = arma::ones<arma::drowvec>(phi_frq.n_cols);
-  hap_frq = arma::normalise(hap_frq, p = 1, dim = 0);
+  hap_frq = arma::normalise(hap_frq, 1, 0);
 
   // return the additive logistic transformation
   return hap_frq;
@@ -484,8 +484,9 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    mean.col(k) = arma::mean(frq_pth.col(k), 1);
-    variance.slice(k) = arma::cov(frq_pth.col(k).t(), frq_pth.col(k).t());
+    arma::dmat frq_smp = frq_pth.col(k);
+    mean.col(k) = arma::mean(frq_smp.t(), 0);
+    variance.slice(k) = arma::cov(frq_smp.t());
   }
 
   // return the approximations for the mean vector and variance matrix of the logistic normal approximation
@@ -503,13 +504,13 @@ List approximatWFM_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcu
   arma::dmat alpha = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat beta = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    // calculate the mean of the beta distributions 
+    // calculate the mean of the beta distributions
     arma::dcolvec m = arma::zeros<arma::dcolvec>(3);
     m(0) = mean(0, k) + mean(1, k);
     m(1) = mean(0, k) / (mean(0, k) + mean(1, k));
     m(2) = mean(2, k) / (mean(2, k) + mean(3, k));
 
-    // calculate the variance of the beta distributions 
+    // calculate the variance of the beta distributions
     arma::dcolvec V = arma::zeros<arma::dcolvec>(3);
     V(0) = (variance(0, 0, k) - variance(1, 1, k)) / (m(1) * m(1) - (1 - m(1)) * (1 - m(1)));
     V(1) = (variance(0, 0, k) + variance(1, 1, k) - (m(1) * m(1) + (1 - m(1)) * (1 - m(1))) * V(0)) / 2 / (m(0) * m(0) + V(0));
@@ -533,10 +534,10 @@ arma::dcube simulateWFM_HierarchicalBeta_arma(const arma::dmat& alpha, const arm
   // simulate the haplotype frequency trajectories under the hierarchical beta approximation
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat psi_frq = arma::(3, sim_num);
-    psi_frq.row(0) = Rcpp::rbeta(sim_num, alpha(0, k), beta(0, k));
-    psi_frq.row(1) = Rcpp::rbeta(sim_num, alpha(1, k), beta(1, k));
-    psi_frq.row(2) = Rcpp::rbeta(sim_num, alpha(2, k), beta(2, k));
+    arma::dmat psi_frq = arma::zeros<arma::dmat>(3, sim_num);
+    psi_frq.row(0) = as<arma::dmat>(Rcpp::rbeta(sim_num, alpha(0, k), beta(0, k)));
+    psi_frq.row(1) = as<arma::dmat>(Rcpp::rbeta(sim_num, alpha(1, k), beta(1, k)));
+    psi_frq.row(2) = as<arma::dmat>(Rcpp::rbeta(sim_num, alpha(2, k), beta(2, k)));
 
     frq_pth.tube(0, k) = psi_frq.row(0) % psi_frq.row(1);
     frq_pth.tube(1, k) = psi_frq.row(0) % (1 - psi_frq.row(1));
@@ -570,7 +571,7 @@ List approximateMoment_HierarchicalBeta_arma(const arma::dmat& alpha, const arma
     //
     variance(0, 0, k) = V(0) * m(1) * m(1) + (V(0) + m(0) * m(0)) * V(1);
     variance(0, 1, k) = -(V(0) + m(0) * m(0)) * V(1) + V(0) * m(1) * (1 - m(1));
-    variance(0, 2, k) = -V(0) * m(1) * mt(2);
+    variance(0, 2, k) = -V(0) * m(1) * m(2);
     variance(0, 3, k) = -V(0) * m(1) * (1 - m(2));
     variance(1, 0, k) = variance(0, 1, k);
     variance(1, 1, k) = V(0) * (1 - m(1)) * (1 - m(1)) + (V(0) + m(0) * m(0)) * V(1);
