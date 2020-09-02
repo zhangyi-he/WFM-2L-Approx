@@ -5,11 +5,8 @@
 
 #' R functions
 
-#install.packages("MASS")
-library("MASS")
-
-#install.packages("coda")
-library("coda")
+# install.packages("MEPDF")
+library("MEPDF")
 
 #install.packages("inline")
 library("inline")
