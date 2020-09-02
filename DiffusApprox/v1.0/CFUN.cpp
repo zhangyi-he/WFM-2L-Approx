@@ -26,26 +26,26 @@ arma::drowvec simulateWFM_1L_arma(const double& sel_cof, const double& dom_par, 
   RNGScope scope;
 
   // declare the fitness
-  arma::dcolvec fts = arma::ones<arma::dcolvec>(3);
+  arma::dcolvec fts_vec = arma::ones<arma::dcolvec>(3);
   // fts(0) = 1.0;
-  fts(1) = 1.0 - sel_cof * dom_par;
-  fts(2) = 1.0 - sel_cof;
-  
+  fts_vec(1) = 1.0 - sel_cof * dom_par;
+  fts_vec(2) = 1.0 - sel_cof;
+
   // declare the mutant allele frequency trajectory
   arma::drowvec frq_pth = arma::zeros<arma::drowvec>(arma::uword(lst_gen - int_gen) + 1);
-  
+
   // initialise the mutant allele frequency in generation 0
   frq_pth(0) = int_frq;
-    
+
   for (arma::uword t = 1; t < arma::uword(lst_gen - int_gen) + 1; t++) {
     // calculate the sampling probability
     arma::dcolvec gen_frq = arma::zeros<arma::dcolvec>(3);
     gen_frq(0) = frq_pth(t - 1) * frq_pth(t - 1);
     gen_frq(1) = 2 * frq_pth(t - 1) * (1 - frq_pth(t - 1));
     gen_frq(2) = (1 - frq_pth(t - 1)) * (1 - frq_pth(t - 1));
-    gen_frq = (fts % gen_frq) / arma::accu(fts % gen_frq);
+    gen_frq = (fts_vec % gen_frq) / arma::accu(fts_vec % gen_frq);
     double prob = gen_frq(0) + gen_frq(1) / 2;
-    
+
     // proceed the Wright-Fisher sampling
     frq_pth(t) = R::rbinom(2 * pop_siz, prob) / 2 / pop_siz;
   }
@@ -138,32 +138,32 @@ arma::dmat simulateWFM_2L_arma(const arma::dmat& fts_mat, const double& rec_rat,
 arma::drowvec simulateDiffusApprox_1L_arma(const double& sel_cof, const double& dom_par, const int& pop_siz, const double& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
-  
+
   // rescale the selection coefficient
   double scl_sel_cof = 2 * pop_siz * sel_cof;
-  
+
   // calculate delta t
   double dt = 1.0 / (2 * pop_siz) / ptn_num;
   // generate delta W
   arma::drowvec dW = pow(dt, 0.5) * arma::randn<arma::drowvec>(arma::uword(lst_gen - int_gen) * ptn_num);
-  
+
   // declare the mutant allele frequency trajectory
   arma::drowvec frq_pth = arma::zeros<arma::drowvec>(arma::uword(lst_gen - int_gen) * ptn_num + 1);
-  
+
   // initialise the mutant allele frequency in generation 0
   frq_pth(0) = int_frq;
-  
+
   // simulate the mutant allele frequency trajectory
   for (arma::uword t = 1; t < arma::uword(lst_gen - int_gen) * ptn_num + 1; t++) {
     // calculate the drift coefficient
     double mu = scl_sel_cof * frq_pth(t - 1) * (1 - frq_pth(t - 1)) * ((1 - dom_par) - (1 - 2 * dom_par) * frq_pth(t - 1));
-    
+
     // calculate the diffusion coefficient
     double sigma = pow(frq_pth(t - 1) * (1 - frq_pth(t - 1)), 0.5);
-    
+
     // proceed the Euler-Maruyama scheme
     frq_pth(t) = frq_pth(t - 1) + mu * dt + sigma * dW(t - 1);
-    
+
     // remove the noise from the numerical techniques
     if (frq_pth(t) < 0) {
       frq_pth(t) = 0;
@@ -172,7 +172,7 @@ arma::drowvec simulateDiffusApprox_1L_arma(const double& sel_cof, const double& 
       frq_pth(t) = 1;
     }
   }
-  
+
   // return the mutant allele frequency trajectory under the Wright-Fisher diffusion
   return frq_pth;
 }
@@ -254,7 +254,6 @@ arma::dmat simulateDiffusApprox_2L_arma(const double& sel_cof_A, const double& d
   return frq_pth;
 }
 /*************************/
-
 
 
 /****** GuidedProc *******/
