@@ -8,12 +8,6 @@
 # install.packages("MEPDF")
 library("MEPDF")
 
-#install.packages("MASS")
-library("MASS")
-
-#install.packages("coda")
-library("coda")
-
 #install.packages("inline")
 library("inline")
 #install.packages("Rcpp")
@@ -40,14 +34,14 @@ sourceCpp("./DiffusApprox/v1.0/CFUN.cpp")
 #' @param lst_gen the last generation of the simulated mutant allele frequency trajectory
 
 #' Standard version
-simulateOLWFMS <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen) {
-  frq_pth <- simulateOLWFMS_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen)
+simulateWFM_1L <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen) {
+  frq_pth <- simulateWFM_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen)
   frq_pth <- as.vector(frq_pth)
 
   return(frq_pth)
 }
 #' Compiled version
-cmpsimulateOLWFMS <- cmpfun(simulateOLWFMS)
+cmpsimulateWFM_1L <- cmpfun(simulateWFM_1L)
 
 ########################################
 
@@ -60,21 +54,21 @@ cmpsimulateOLWFMS <- cmpfun(simulateOLWFMS)
 #' @param int_gen the first generation of the simulated mutant allele frequency trajectory
 #' @param lst_gen the last generation of the simulated mutant allele frequency trajectory
 #' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
-#' @param data_augmentation = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
+#' @param dat_aug = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
 
 #' Standard version
-simulateOLWFDS <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = TRUE) {
-  frq_pth <- simulateOLWFDS_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
+simulateDiffusApprox_1L <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = TRUE) {
+  frq_pth <- simulateDiffusApprox_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
   frq_pth <- as.vector(frq_pth)
 
-  if (data_augmentation == FALSE) {
+  if (dat_aug == FALSE) {
     return(frq_pth[(0:(lst_gen - int_gen)) * ptn_num + 1])
   } else {
     return(frq_pth)
   }
 }
 #' Compiled version
-cmpsimulateOLWFDS <- cmpfun(simulateOLWFDS)
+cmpsimulateDiffusApprox_1L <- cmpfun(simulateDiffusApprox_1L)
 
 ########################################
 
@@ -89,18 +83,20 @@ cmpsimulateOLWFDS <- cmpfun(simulateOLWFDS)
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 
 #' Standard version
-simulateTLWFMS <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen) {
+simulateWFM_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen) {
   sel_cof_A <- sel_cof[1]
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
 
-  frq_pth <- simulateTLWFMS_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
+  fts_mat <- calculateFitnessMat_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
+
+  frq_pth <- simulateWFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
 
   return(frq_pth)
 }
 #' Compiled version
-cmpsimulateTLWFMS <- cmpfun(simulateTLWFMS)
+cmpsimulateWFM_2L <- cmpfun(simulateWFM_2L)
 
 ########################################
 
@@ -114,29 +110,46 @@ cmpsimulateTLWFMS <- cmpfun(simulateTLWFMS)
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
-#' @param data_augmentation = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
+#' @param dat_aug = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
 
 #' Standard version
-simulateTLWFDS <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = TRUE) {
+simulateDiffusApprox_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = TRUE) {
   sel_cof_A <- sel_cof[1]
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
 
-  frq_pth <- simulateTLWFDS_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
+  frq_pth <- simulateDiffusApprox_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
 
-  if (data_augmentation == FALSE) {
+  if (dat_aug == FALSE) {
     return(frq_pth[, (0:(lst_gen - int_gen)) * ptn_num + 1])
   } else {
     return(frq_pth)
   }
 }
 #' Compiled version
-cmpsimulateTLWFDS <- cmpfun(simulateTLWFDS)
+cmpsimulateDiffusApprox_2L <- cmpfun(simulateDiffusApprox_2L)
 
 ########################################
 
-#' Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
+#' Compute the empirical probability density function for the Wright-Fisher model or its diffusion approximation 
+#' Parameter setting
+#' @param model = WFM/WFD (return the empirical probability density function for the Wright-Fisher model or its diffusion approximation)
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the samples in Monte Carlo simulation
+#' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
+
+
+
+########################################
+
+#' Calculate the distance between the empirical probability density functions for the Wright-Fisher model or its diffusion approximation  
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -145,26 +158,10 @@ cmpsimulateTLWFDS <- cmpfun(simulateTLWFDS)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
-#' @param data_augmentation = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
 
-#' Standard version
-simulateTLWFDS <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = TRUE) {
-  sel_cof_A <- sel_cof[1]
-  sel_cof_B <- sel_cof[2]
-  dom_par_A <- dom_par[1]
-  dom_par_B <- dom_par[2]
 
-  frq_pth <- simulateTLWFDS_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
-
-  if (data_augmentation == FALSE) {
-    return(frq_pth[, (0:(lst_gen - int_gen)) * ptn_num + 1])
-  } else {
-    return(frq_pth)
-  }
-}
-#' Compiled version
-cmpsimulateTLWFDS <- cmpfun(simulateTLWFDS)
 
 ########################################
 
@@ -178,28 +175,12 @@ cmpsimulateTLWFDS <- cmpfun(simulateTLWFDS)
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
-#' @param data_augmentation = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
+#' @param dat_aug = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
 #' @param guided_proc the guided process (Fearnhead (2008) or He et al. (2020))
 #' @param modification = TRUE/FALSE
 #' @param rho
 
-#' Standard version
-simulateGuidedProc <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = TRUE, guided_proc, modification = TRUE, ...) {
-  sel_cof_A <- sel_cof[1]
-  sel_cof_B <- sel_cof[2]
-  dom_par_A <- dom_par[1]
-  dom_par_B <- dom_par[2]
 
-  frq_pth <- simulateTLWFDS_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
-
-  if (data_augmentation == FALSE) {
-    return(frq_pth[, (0:(lst_gen - int_gen)) * ptn_num + 1])
-  } else {
-    return(frq_pth)
-  }
-}
-#' Compiled version
-cmpsimulateGuidedProc <- cmpfun(simulateGuidedProc)
 
 ########################################
 
