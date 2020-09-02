@@ -5,9 +5,6 @@
 
 #' R functions
 
-# install.packages("MEPDF")
-library("MEPDF")
-
 #install.packages("inline")
 library("inline")
 #install.packages("Rcpp")
@@ -132,9 +129,9 @@ cmpsimulateDiffusApprox_2L <- cmpfun(simulateDiffusApprox_2L)
 
 ########################################
 
-#' Compute the empirical probability density function for the Wright-Fisher model or its diffusion approximation 
+#' Compute the empirical cumulative distribution function for the Wright-Fisher model or the Wright-Fisher diffusion
 #' Parameter setting
-#' @param model = WFM/WFD (return the empirical probability density function for the Wright-Fisher model or its diffusion approximation)
+#' @param model = WFM/WFD (return the empirical cumulative distribution function for the Wright-Fisher model or the Wright-Fisher diffusion)
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
 #' @param rec_rat the recombination rate between loci A and B
@@ -149,7 +146,7 @@ cmpsimulateDiffusApprox_2L <- cmpfun(simulateDiffusApprox_2L)
 
 ########################################
 
-#' Calculate the distance between the empirical probability density functions for the Wright-Fisher model or its diffusion approximation  
+#' Calculate the distance between the empirical cumulative distribution functions for the Wright-Fisher model or the Wright-Fisher diffusion
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
