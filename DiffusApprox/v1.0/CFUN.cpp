@@ -132,10 +132,10 @@ arma::dmat simulateWFM_2L_arma(const arma::dmat& fts_mat, const double& rec_rat,
 /*************************/
 
 
-/***** DiffusApprox ******/
+/********** WFD **********/
 // Simulate the mutant allele frequency trajectory according to the one-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
 // [[Rcpp::export]]
-arma::drowvec simulateDiffusApprox_1L_arma(const double& sel_cof, const double& dom_par, const int& pop_siz, const double& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
+arma::drowvec simulateWFD_1L_arma(const double& sel_cof, const double& dom_par, const int& pop_siz, const double& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -177,9 +177,9 @@ arma::drowvec simulateDiffusApprox_1L_arma(const double& sel_cof, const double& 
   return frq_pth;
 }
 
-// Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection using the Euler-Maruyama method
+// Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
 // [[Rcpp::export]]
-arma::dmat simulateDiffusApprox_2L_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
+arma::dmat simulateWFD_2L_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -252,6 +252,86 @@ arma::dmat simulateDiffusApprox_2L_arma(const double& sel_cof_A, const double& d
 
   // return the haplotype frequency trajectories under the Wright-Fisher diffusion
   return frq_pth;
+}
+/*************************/
+
+
+/********* ECDF **********/
+// Generate the sample mutant allele frequency trajectories according to the one-locus Wright-Fisher model with selection
+// [[Rcpp::export]]
+arma::dmat generateSample_WFM_1L_arma(const double& sel_cof, const double& dom_par, const int& pop_siz, const double& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) + 1);
+  for (arma::uword i = 0; i < sim_num + 1; i++) {
+    frq_smp.row(i) = simulateWFM_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen);
+  }
+
+  return frq_smp;
+}
+
+// Generate the sample mutant allele frequency trajectories according to the one-locus Wright-Fisher diffusion with selection
+// [[Rcpp::export]]
+arma::dmat generateSample_WFD_1L_arma(const double& sel_cof, const double& dom_par, const int& pop_siz, const double& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num, const arma::uword& sim_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) * ptn_num);
+  for (arma::uword i = 0; i < sim_num + 1; i++) {
+    frq_smp.row(i) = simulateWFD_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
+  }
+
+  return frq_smp;
+}
+
+// Generate the sample haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
+// [[Rcpp::export]]
+arma::dcube generateSample_WFM_2L_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dcube frq_smp = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
+  for (arma::uword i = 0; i < sim_num + 1; i++) {
+    frq_smp.slice(i) = simulateWFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
+  }
+
+  return frq_smp;
+}
+
+// Generate the sample haplotype frequency trajectories according to the two-locus Wright-Fisher diffusion with selection
+// [[Rcpp::export]]
+arma::dcube generateSample_WFD_2L_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& ptn_num, const arma::uword& sim_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dcube frq_smp = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) * ptn_num, sim_num);
+  for (arma::uword i = 0; i < sim_num + 1; i++) {
+    frq_smp.slice(i) = simulateWFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
+  }
+
+  return frq_smp;
+}
+
+// Generate the grids for empirical cumulative distribution function
+// [[Rcpp::export]]
+arma::dmat generateGrid_2L_arma(const arma::uword& grd_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dmat frq_grd = arma::zeros<arma::dmat>(1, 4);
+  for (arma::uword i = 0; i < grd_num + 1; i++) {
+    for (arma::uword j = 0; j < grd_num + 1 - i; j++) {
+      for (arma::uword k = 0; k < grd_num + 1 - i - j; k++) {
+        arma::drowvec frq = {double(i), double(j), double(k), double(grd_num - i - j - k)};
+        frq_grd.insert_rows(0, 1);
+        frq_grd.row(0) = frq / double(grd_num);
+      }
+    }
+  }
+  frq_grd.shed_row(frq_grd.n_rows - 1);
+
+  return frq_grd;
 }
 /*************************/
 
