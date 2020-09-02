@@ -73,7 +73,7 @@ arma::dmat simulateWFM_arma(const arma::dmat& fts_mat, const double& rec_rat, co
   RNGScope scope;
 
   // declare the haplotype frequency trajectories
-  arma::dmat frq_pth(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dmat frq_pth = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
 
   // initialise the haplotype frequencies in generation 0
   frq_pth.col(0) = int_frq;
@@ -115,7 +115,7 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
   arma::dmat dW = pow(dt, 0.5) * arma::randn<arma::dmat>(6, arma::uword(lst_gen - int_gen) * ptn_num);
 
   // declare the haplotype frequency trajectories
-  arma::dmat frq_pth(4, arma::uword(lst_gen - int_gen) * ptn_num + 1);
+  arma::dmat frq_pth = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) * ptn_num + 1);
 
   // initialise the haplotype frequencies in generation 0
   frq_pth.col(0) = int_frq;
