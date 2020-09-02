@@ -264,7 +264,7 @@ arma::dmat generateSample_WFM_1L_arma(const double& sel_cof, const double& dom_p
   RNGScope scope;
 
   arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) + 1);
-  for (arma::uword i = 0; i < sim_num + 1; i++) {
+  for (arma::uword i = 0; i < sim_num; i++) {
     frq_smp.row(i) = simulateWFM_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen);
   }
 
@@ -278,7 +278,7 @@ arma::dmat generateSample_WFD_1L_arma(const double& sel_cof, const double& dom_p
   RNGScope scope;
 
   arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) * ptn_num);
-  for (arma::uword i = 0; i < sim_num + 1; i++) {
+  for (arma::uword i = 0; i < sim_num; i++) {
     frq_smp.row(i) = simulateWFD_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
   }
 
@@ -291,9 +291,9 @@ arma::dcube generateSample_WFM_2L_arma(const arma::dmat& fts_mat, const double& 
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dcube frq_smp = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  for (arma::uword i = 0; i < sim_num + 1; i++) {
-    frq_smp.slice(i) = simulateWFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
+  arma::dcube frq_smp = arma::zeros<arma::dcube>(sim_num, 4, arma::uword(lst_gen - int_gen) + 1);
+  for (arma::uword i = 0; i < sim_num; i++) {
+    frq_smp.row(i) = simulateWFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
   }
 
   return frq_smp;
@@ -305,9 +305,9 @@ arma::dcube generateSample_WFD_2L_arma(const double& sel_cof_A, const double& do
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dcube frq_smp = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) * ptn_num, sim_num);
-  for (arma::uword i = 0; i < sim_num + 1; i++) {
-    frq_smp.slice(i) = simulateWFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
+  arma::dcube frq_smp = arma::zeros<arma::dcube>(sim_num, 4, arma::uword(lst_gen - int_gen) * ptn_num);
+  for (arma::uword i = 0; i < sim_num; i++) {
+    frq_smp.row(i) = simulateWFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
   }
 
   return frq_smp;
