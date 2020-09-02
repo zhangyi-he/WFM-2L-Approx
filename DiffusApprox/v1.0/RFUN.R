@@ -5,6 +5,9 @@
 
 #' R functions
 
+# install.packages("MEPDF")
+library("MEPDF")
+
 #install.packages("MASS")
 library("MASS")
 
@@ -23,7 +26,7 @@ library("compiler")
 #enableJIT(1)
 
 # call C++ functions
-sourceCpp("./DiffusApprox/v1.0/CFUN_2L.cpp")
+sourceCpp("./DiffusApprox/v1.0/CFUN.cpp")
 
 ################################################################################
 
@@ -178,7 +181,7 @@ cmpsimulateTLWFDS <- cmpfun(simulateTLWFDS)
 #' @param data_augmentation = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
 #' @param guided_proc the guided process (Fearnhead (2008) or He et al. (2020))
 #' @param modification = TRUE/FALSE
-#' @param rho 
+#' @param rho
 
 #' Standard version
 simulateGuidedProc <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = TRUE, guided_proc, modification = TRUE, ...) {
@@ -228,7 +231,7 @@ cmpsimulateGuidedProc <- cmpfun(simulateGuidedProc)
 #' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
 #' @param guided_proc the guided process (Fearnhead (2008) or He et al. (2020))
 #' @param modification = TRUE/FALSE
-#' @param rho 
+#' @param rho
 
 
 
@@ -247,7 +250,7 @@ cmpsimulateGuidedProc <- cmpfun(simulateGuidedProc)
 #' @param sim_num the number of Monte Carlo simulations
 #' @param guided_proc the guided process (Fearnhead (2008) or He et al. (2020))
 #' @param modification = TRUE/FALSE
-#' @param rho 
+#' @param rho
 
 
 
