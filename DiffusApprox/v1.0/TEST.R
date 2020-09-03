@@ -38,7 +38,7 @@ dom_par <- 5e-01
 pop_siz <- 5e+03
 int_frq <- 2e-01
 int_gen <- 0
-lst_gen <- 500
+lst_gen <- 10
 
 frq_pth <- cmpsimulateOLWFMS(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen)
 
