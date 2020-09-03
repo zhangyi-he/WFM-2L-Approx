@@ -305,7 +305,7 @@ arma::dcube generateSample_WFD_2L_arma(const double& sel_cof_A, const double& do
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dcube frq_smp = arma::zeros<arma::dcube>(sim_num, 4, arma::uword(lst_gen - int_gen) * ptn_num);
+  arma::dcube frq_smp = arma::zeros<arma::dcube>(sim_num, 4, arma::uword(lst_gen - int_gen) * ptn_num + 1);
   for (arma::uword i = 0; i < sim_num; i++) {
     frq_smp.row(i) = simulateWFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
   }
