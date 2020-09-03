@@ -5,6 +5,9 @@
 
 #' R functions
 
+# install.packages("np")
+library("np")
+
 #install.packages("inline")
 library("inline")
 #install.packages("Rcpp")
@@ -158,20 +161,24 @@ cmpsimulateDiffusApprox_2L <- cmpfun(simulateDiffusApprox_2L)
 #' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
 
-sel_cof_A <- sel_cof[1]
-sel_cof_B <- sel_cof[2]
-dom_par_A <- dom_par[1]
-dom_par_B <- dom_par[2]
+  sel_cof_A <- sel_cof[1]
+  sel_cof_B <- sel_cof[2]
+  dom_par_A <- dom_par[1]
+  dom_par_B <- dom_par[2]
 
-fts_mat <- calculateFitnessMat_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-WFM_smp <- generateSample_WFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num)
+  fts_mat <- calculateFitnessMat_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
+  WFM_smp <- generateSample_WFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num)
 
-WFD_smp <- generateSample_WFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
-WFD_smp <- WFD_smp[, , (0:(lst_gen - int_gen)) * ptn_num + 1]
+  WFD_smp <- generateSample_WFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
+  WFD_smp <- WFD_smp[, , (0:(lst_gen - int_gen)) * ptn_num + 1]
 
-for (k in 1:(lst_gen - int_gen + 1)) {
-  statistic[k] <- npdeneqtest(WFM_smp[, , k], WFD_smp[, , k], boot.num = 1e+02)
-}
+  TnV <- rep(NA, length.out = lst_gen - int_gen)
+  TnP <- rep(NA, length.out = lst_gen - int_gen)
+  for (k in 1:(lst_gen - int_gen)) {
+    statistic <- npdeneqtest(as.data.frame(WFM_smp[, , k + 1]), as.data.frame(WFD_smp[, , k + 1]), boot.num = 1e+02)
+    TnV[k] <- statistic$Tn
+    TnP[k] <- statistic$Tn.P
+  }
 
 
 ########################################
