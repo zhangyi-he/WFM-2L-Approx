@@ -57,8 +57,8 @@ cmpsimulateWFM_1L <- cmpfun(simulateWFM_1L)
 #' @param dat_aug = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
 
 #' Standard version
-simulateDiffusApprox_1L <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = TRUE) {
-  frq_pth <- simulateDiffusApprox_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
+simulateWFD_1L <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = TRUE) {
+  frq_pth <- simulateWFD_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
   frq_pth <- as.vector(frq_pth)
 
   if (dat_aug == FALSE) {
@@ -68,7 +68,7 @@ simulateDiffusApprox_1L <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen,
   }
 }
 #' Compiled version
-cmpsimulateDiffusApprox_1L <- cmpfun(simulateDiffusApprox_1L)
+cmpsimulateWFD_1L <- cmpfun(simulateWFD_1L)
 
 ########################################
 
@@ -113,13 +113,13 @@ cmpsimulateWFM_2L <- cmpfun(simulateWFM_2L)
 #' @param dat_aug = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
 
 #' Standard version
-simulateDiffusApprox_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = TRUE) {
+simulateWFD_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = TRUE) {
   sel_cof_A <- sel_cof[1]
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
 
-  frq_pth <- simulateDiffusApprox_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
+  frq_pth <- simulateWFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num)
 
   if (dat_aug == FALSE) {
     return(frq_pth[, (0:(lst_gen - int_gen)) * ptn_num + 1])
@@ -128,7 +128,7 @@ simulateDiffusApprox_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq,
   }
 }
 #' Compiled version
-cmpsimulateDiffusApprox_2L <- cmpfun(simulateDiffusApprox_2L)
+cmpsimulateWFD_2L <- cmpfun(simulateWFD_2L)
 
 ########################################
 
