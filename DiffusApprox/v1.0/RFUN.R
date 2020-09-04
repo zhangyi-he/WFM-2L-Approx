@@ -195,24 +195,7 @@ cmpgenerateSampleTraj_2L <- cmpfun(generateSampleTraj_2L)
 
 ########################################
 
-#' Compute the empirical cumulative distribution function for the two-locus Wright-Fisher model/diffusion with selection
-#' Parameter setting
-#' @param model = WFM/WFD (return the empirical cumulative distribution function for the two-locus Wright-Fisher model/diffusion with selection)
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
-#' @param ptn_num the number of the subintervals divided per generation in the Euler-Maruyama method
-
-
-
-########################################
-
-#' Calculate the distance between the empirical cumulative distribution functions for the two-locus Wright-Fisher model/diffusion with selection
+#' Calculate the distance between the empirical probability distribution functions for the two-locus Wright-Fisher model/diffusion with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -224,6 +207,8 @@ cmpgenerateSampleTraj_2L <- cmpfun(generateSampleTraj_2L)
 #' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param ptn_num the number of the subintervals divided per generation in the Euler-Maruyama method
 
+#' Standard version
+calculateHellingerDist_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, ptn_num) {
   sel_cof_A <- sel_cof[1]
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
@@ -235,14 +220,19 @@ cmpgenerateSampleTraj_2L <- cmpfun(generateSampleTraj_2L)
   WFD_smp <- generateSample_WFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
   WFD_smp <- WFD_smp[, , (0:(lst_gen - int_gen)) * ptn_num + 1]
 
-  TnV <- rep(NA, length.out = lst_gen - int_gen)
-  TnP <- rep(NA, length.out = lst_gen - int_gen)
-  for (k in 1:(lst_gen - int_gen)) {
-    statistic <- npdeneqtest(as.data.frame(WFM_smp[, , k + 1]), as.data.frame(WFD_smp[, , k + 1]), boot.num = 1e+02)
-    TnV[k] <- statistic$Tn
-    TnP[k] <- statistic$Tn.P
+  dist <- matrix(NA, nrow = 4, ncol = lst_gen - int_gen + 1)
+  for (k in 1:(lst_gen - int_gen + 1)) {
+    for (i in 1:4) {
+      WFM_pdf <- hist(WFM_smp[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+      WFD_pdf <- hist(WFD_smp[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+      dist[i, k] <- sqrt(sum((sqrt(WFM_pdf) - sqrt(WFD_pdf))^2) / 2)
+    }
   }
 
+  return(dist)
+}
+#' Compiled version
+cmpcalculateHellingerDist_2L <- cmpfun(calculateHellingerDist_2L)
 
 ########################################
 
