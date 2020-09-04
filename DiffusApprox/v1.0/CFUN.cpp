@@ -83,24 +83,6 @@ arma::dmat calculateFitnessMat_2L_arma(const double& sel_cof_A, const double& do
   return fts_mat;
 }
 
-// Calculate the sampling probabilities for the two-locus Wright-Fisher model with selection
-// [[Rcpp::export]]
-arma::dcolvec calculateSamplingProb_2L_arma(const arma::dcolvec& hap_frq, const arma::dmat& fts_mat, const double& rec_rat) {
-  // ensure RNG gets set/reset
-  RNGScope scope;
-
-  // initialise eta
-  arma::dcolvec eta = {-1.0, 1.0, 1.0, -1.0};
-
-  // calculate the sampling probabilities
-  arma::dcolvec prob = hap_frq;
-  prob = hap_frq % (fts_mat * hap_frq) / arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
-  prob = prob + eta * rec_rat * (prob(0) * prob(3) - prob(1) * prob(2));
-
-  // return the sampling probabilities for the Wright-Fisher model
-  return prob;
-}
-
 // Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
 // [[Rcpp::export]]
 arma::dmat simulateWFM_2L_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
@@ -113,11 +95,16 @@ arma::dmat simulateWFM_2L_arma(const arma::dmat& fts_mat, const double& rec_rat,
   // initialise the haplotype frequencies in generation 0
   frq_pth.col(0) = int_frq;
 
+  // declare eta
+  arma::dcolvec eta = {-1.0, 1.0, 1.0, -1.0};
+
   // simulate the haplotype frequency trajectories
   arma::dcolvec hap_frq = int_frq;
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     // calculate the sampling probabilities
-    arma::dcolvec prob = calculateSamplingProb_2L_arma(hap_frq, fts_mat, rec_rat);
+    arma::dcolvec prob = hap_frq;
+    prob = hap_frq % (fts_mat * hap_frq) / arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
+    prob = prob + eta * rec_rat * (prob(0) * prob(3) - prob(1) * prob(2));
 
     // proceed the Wright-Fisher sampling
     IntegerVector hap_cnt(4);
@@ -277,7 +264,7 @@ arma::dmat generateSample_WFD_1L_arma(const double& sel_cof, const double& dom_p
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) * ptn_num);
+  arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) * ptn_num + 1);
   for (arma::uword i = 0; i < sim_num; i++) {
     frq_smp.row(i) = simulateWFD_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
   }
