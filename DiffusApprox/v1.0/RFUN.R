@@ -100,6 +100,40 @@ cmpgenerateSampleTraj_1L <- cmpfun(generateSampleTraj_1L)
 
 ########################################
 
+#' Calculate the Hellinger distance between the empirical probability distribution functions for the one-locus Wright-Fisher model/diffusion with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficient
+#' @param dom_par the dominance parameter
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial mutant allele frequency of the population
+#' @param int_gen the first generation of the simulated mutant allele frequency trajectory
+#' @param lst_gen the last generation of the simulated mutant allele frequency trajectory
+#' @param sim_num the number of the samples in Monte Carlo simulation
+#' @param ptn_num the number of the subintervals divided per generation in the Euler-Maruyama method
+
+#' Standard version
+calculateHellingerDist_1L <- function(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, sim_num, ptn_num) {
+  model <- "WFM"
+  smp_WFM <- generateSampleTraj_1L(model, sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, sim_num)
+
+  model <- "WFD"
+  smp_WFD <- generateSampleTraj_1L(model, sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
+  smp_WFD <- smp_WFD[(0:(lst_gen - int_gen)) * ptn_num + 1]
+
+  dist <- rep(NA, length.out = lst_gen - int_gen + 1)
+  for (k in 1:(lst_gen - int_gen + 1)) {
+    pdf_WFM <- hist(smp_WFM[, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+    pdf_WFD <- hist(smp_WFD[, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+    dist[k] <- sqrt(sum((sqrt(pdf_WFM) - sqrt(pdf_WFD))^2) / 2)
+  }
+
+  return(dist)
+}
+#' Compiled version
+cmpcalculateHellingerDist_1L <- cmpfun(calculateHellingerDist_1L)
+
+########################################
+
 #' Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
@@ -195,7 +229,7 @@ cmpgenerateSampleTraj_2L <- cmpfun(generateSampleTraj_2L)
 
 ########################################
 
-#' Calculate the distance between the empirical probability distribution functions for the two-locus Wright-Fisher model/diffusion with selection
+#' Calculate the Hellinger distance between the empirical (marginal) probability distribution functions for the two-locus Wright-Fisher model/diffusion with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -214,18 +248,19 @@ calculateHellingerDist_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_fr
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
 
-  fts_mat <- calculateFitnessMat_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  WFM_smp <- generateSample_WFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num)
+  model <- "WFM"
+  smp_WFM <- generateSampleTraj_2L(model, sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num)
 
-  WFD_smp <- generateSample_WFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
-  WFD_smp <- WFD_smp[, , (0:(lst_gen - int_gen)) * ptn_num + 1]
+  model <- "WFD"
+  smp_WFD <- generateSampleTraj_2L(model, sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
+  smp_WFD <- smp_WFD[, , (0:(lst_gen - int_gen)) * ptn_num + 1]
 
   dist <- matrix(NA, nrow = 4, ncol = lst_gen - int_gen + 1)
   for (k in 1:(lst_gen - int_gen + 1)) {
     for (i in 1:4) {
-      WFM_pdf <- hist(WFM_smp[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
-      WFD_pdf <- hist(WFD_smp[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
-      dist[i, k] <- sqrt(sum((sqrt(WFM_pdf) - sqrt(WFD_pdf))^2) / 2)
+      pdf_WFM <- hist(smp_WFM[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+      pdf_WFD <- hist(smp_WFD[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+      dist[i, k] <- sqrt(sum((sqrt(pdf_WFM) - sqrt(pdf_WFD))^2) / 2)
     }
   }
 
