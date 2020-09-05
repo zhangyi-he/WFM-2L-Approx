@@ -5,9 +5,6 @@
 
 #' R functions
 
-# install.packages("np")
-library("np")
-
 #install.packages("inline")
 library("inline")
 #install.packages("Rcpp")
@@ -90,7 +87,6 @@ generateSampleTraj_1L <- function(model, sel_cof, dom_par, pop_siz, int_frq, int
     smp_pth <- generateSample_WFM_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, sim_num)
   } else {
     smp_pth <- generateSample_WFD_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
-    smp_pth <- smp_pth[, (0:(lst_gen - int_gen)) * ptn_num + 1]
   }
 
   return(smp_pth)
@@ -219,7 +215,6 @@ generateSampleTraj_2L <- function(model, sel_cof, dom_par, rec_rat, pop_siz, int
     smp_pth <- generateSample_WFM_2L_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num)
   } else {
     smp_pth <- generateSample_WFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num)
-    smp_pth <- smp_pth[, , (0:(lst_gen - int_gen)) * ptn_num + 1]
   }
 
   return(smp_pth)
@@ -268,6 +263,39 @@ calculateHellingerDist_2L <- function(sel_cof, dom_par, rec_rat, pop_siz, int_fr
 }
 #' Compiled version
 cmpcalculateHellingerDist_2L <- cmpfun(calculateHellingerDist_2L)
+
+########################################
+
+#' Calculate the Hellinger distance between the empirical probability distribution functions for the Wright-Fisher model/diffusion
+#' Parameter setting
+#' @param smp_WFM the sample trajectories generated under the Wright-Fisher model
+#' @param smp_WFD the sample trajectories generated under the Wright-Fisher diffusion
+#' @param grd_num the grid number for the empirical probability distribution function
+
+#' Standard version
+calculateHellingerDist <- function(smp_WFM, smp_WFD, grd_num) {
+  if (is.matrix(smp_WFM)) {
+    dist <- rep(NA, length.out = dim(smp_WFM)[2])
+    for (k in 1:dim(smp_WFM)[2]) {
+      pdf_WFM <- hist(smp_WFM[, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+      pdf_WFD <- hist(smp_WFD[, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+      dist[k] <- sqrt(sum((sqrt(pdf_WFM) - sqrt(pdf_WFD))^2) / 2)
+    }
+  } else {
+    dist <- matrix(NA, nrow = dim(smp_WFM)[2], ncol = dim(smp_WFM)[3])
+    for (k in 1:dim(smp_WFM)[3]) {
+      for (i in 1:4) {
+        pdf_WFM <- hist(smp_WFM[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+        pdf_WFD <- hist(smp_WFD[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+        dist[i, k] <- sqrt(sum((sqrt(pdf_WFM) - sqrt(pdf_WFD))^2) / 2)
+      }
+    }
+  }
+
+  return(dist)
+}
+#' Compiled version
+cmpcalculateHellingerDist <- cmpfun(calculateHellingerDist)
 
 ########################################
 
