@@ -264,10 +264,10 @@ arma::dmat generateSample_WFD_1L_arma(const double& sel_cof, const double& dom_p
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) * ptn_num + 1);
+  arma::dmat frq_smp = arma::zeros<arma::dmat>(sim_num, arma::uword(lst_gen - int_gen) + 1);
   for (arma::uword i = 0; i < sim_num; i++) {
     arma::dmat frq_pth = simulateWFD_1L_arma(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
-    arma::ucolvec sel_gen = arma::linspace<arma::ucolvec>(0, arma::uword(lst_gen - int_gen), arma::uword(lst_gen - int_gen) + 1);
+    arma::ucolvec sel_gen = arma::linspace<arma::ucolvec>(0, arma::uword(lst_gen - int_gen) * ptn_num, arma::uword(lst_gen - int_gen) + 1);
     frq_smp.row(i) = frq_pth.cols(sel_gen);
   }
 
@@ -297,7 +297,7 @@ arma::dcube generateSample_WFD_2L_arma(const double& sel_cof_A, const double& do
   arma::dcube frq_smp = arma::zeros<arma::dcube>(sim_num, 4, arma::uword(lst_gen - int_gen) + 1);
   for (arma::uword i = 0; i < sim_num; i++) {
     arma::dmat frq_pth = simulateWFD_2L_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num);
-    arma::ucolvec sel_gen = arma::linspace<arma::ucolvec>(0, arma::uword(lst_gen - int_gen), arma::uword(lst_gen - int_gen) + 1);
+    arma::ucolvec sel_gen = arma::linspace<arma::ucolvec>(0, arma::uword(lst_gen - int_gen) * ptn_num, arma::uword(lst_gen - int_gen) + 1);
     frq_smp.row(i) = frq_pth.cols(sel_gen);
   }
 
