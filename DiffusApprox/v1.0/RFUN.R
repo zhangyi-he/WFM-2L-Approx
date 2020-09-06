@@ -277,16 +277,16 @@ calculateHellingerDist <- function(smp_WFM, smp_WFD, grd_num) {
   if (is.matrix(smp_WFM)) {
     dist <- rep(NA, length.out = dim(smp_WFM)[2])
     for (k in 1:dim(smp_WFM)[2]) {
-      pdf_WFM <- hist(smp_WFM[, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
-      pdf_WFD <- hist(smp_WFD[, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+      pdf_WFM <- hist(smp_WFM[, k], breaks = (0:grd_num) / grd_num, plot = FALSE)$counts / nrow(smp_WFM)
+      pdf_WFD <- hist(smp_WFD[, k], breaks = (0:grd_num) / grd_num, plot = FALSE)$counts / nrow(smp_WFD)
       dist[k] <- sqrt(sum((sqrt(pdf_WFM) - sqrt(pdf_WFD))^2) / 2)
     }
   } else {
     dist <- matrix(NA, nrow = dim(smp_WFM)[2], ncol = dim(smp_WFM)[3])
     for (k in 1:dim(smp_WFM)[3]) {
       for (i in 1:4) {
-        pdf_WFM <- hist(smp_WFM[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
-        pdf_WFD <- hist(smp_WFD[, i, k], breaks = (0:(2 * pop_siz)) / (2 * pop_siz), plot = FALSE)$counts / sim_num
+        pdf_WFM <- hist(smp_WFM[, i, k], breaks = (0:grd_num) / grd_num, plot = FALSE)$counts / dim(smp_WFM)[1]
+        pdf_WFD <- hist(smp_WFD[, i, k], breaks = (0:grd_num) / grd_num, plot = FALSE)$counts / dim(smp_WFD)[1]
         dist[i, k] <- sqrt(sum((sqrt(pdf_WFM) - sqrt(pdf_WFD))^2) / 2)
       }
     }
