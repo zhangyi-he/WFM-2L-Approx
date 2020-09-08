@@ -5,6 +5,11 @@
 
 #' R functions
 
+#install.packages("mltools")
+library("mltools")
+#install.packages("data.table")
+library("data.table")
+
 #install.packages("inline")
 library("inline")
 #install.packages("Rcpp")
@@ -296,6 +301,38 @@ calculateHellingerDist <- function(smp_WFM, smp_WFD, grd_num) {
 }
 #' Compiled version
 cmpcalculateHellingerDist <- cmpfun(calculateHellingerDist)
+
+########################################
+
+#' Calculate the root mean square deviation between the empirical cumulative distribution functions for the Wright-Fisher model/diffusion
+#' Parameter setting
+#' @param smp_WFM the sample trajectories generated under the Wright-Fisher model
+#' @param smp_WFD the sample trajectories generated under the Wright-Fisher diffusion
+#' @param grd_num the grid number for the empirical probability distribution function
+#' @param rnd_grd = TRUE/FALSE (return the root mean square deviation between the empirical cumulative distribution functions with random grid points or not)
+
+#' Standard version
+calculateRMSD <- function(smp_WFM, smp_WFD, grd_num, rnd_grd = TRUE) {
+  if (rnd_grd == TRUE) {
+    frq_grd <- generateRndGrid_2L_arma(grd_num)
+  } else {
+    frq_grd <- generateFixGrid_2L_arma(grd_num)
+  }
+  frq_grd <- t(frq_grd)
+  frq_grd <- data.table(frq_grd)
+  setnames(frq_grd, c("A1B1", "A1B2", "A2B1", "A2B2"))
+
+  dist <- rep(NA, length.out = dim(smp_WFM)[3])
+  for (k in 1:dim(smp_WFM)[2]) {
+    cdf_WFM <- empirical_cdf(data.table(A1B1 = smp_WFM[, 1, k], A1B2 = smp_WFM[, 2, k], A2B1 = smp_WFM[, 3, k], A2B2 = smp_WFM[, 4, k]), ubounds = frq_grd)
+    cdf_WFD <- empirical_cdf(data.table(A1B1 = smp_WFD[, 1, k], A1B2 = smp_WFD[, 2, k], A2B1 = smp_WFD[, 3, k], A2B2 = smp_WFD[, 4, k]), ubounds = frq_grd)
+    dist[k] <- sqrt(sum((cdf_WFM - cdf_WFD)^2) / dim(smp_WFM)[1])
+  }
+
+  return(dist)
+}
+#' Compiled version
+cmpcalculateRMSD <- cmpfun(calculateRMSD)
 
 ########################################
 
