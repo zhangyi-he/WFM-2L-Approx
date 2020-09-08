@@ -306,7 +306,7 @@ arma::dcube generateSample_WFD_2L_arma(const double& sel_cof_A, const double& do
 
 // Generate the grids for empirical cumulative distribution function
 // [[Rcpp::export]]
-arma::dmat generateGrid_2L_arma(const arma::uword& grd_num) {
+arma::dmat generateFixGrid_2L_arma(const arma::uword& grd_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -324,6 +324,24 @@ arma::dmat generateGrid_2L_arma(const arma::uword& grd_num) {
 
   return frq_grd;
 }
+
+// Generate the grids for empirical cumulative distribution function
+// [[Rcpp::export]]
+arma::dmat generateRndGrid_2L_arma(const arma::uword& grd_num) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  NumericMatrix frq_grd(grd_num, 4);
+  for(int j = 0; j < 4; j++){
+    frq_grd(_, j) = rgamma(grd_num, 1.0, 1.0);
+  }
+  for(int i = 0; i < grd_num; i++){
+    frq_grd(i, _) = frq_grd(i, _) / sum(frq_grd(i, _));
+  }
+
+  return as<arma::dmat>(transpose(frq_grd));
+}
+
 /*************************/
 
 
