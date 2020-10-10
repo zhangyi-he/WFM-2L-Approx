@@ -4,9 +4,7 @@
 #' version 1.0
 
 # set the directory
-setwd("~/Documents/GitHub/WFM-2L-Approx")
-
-source("./ParamApprox/v1.0/RFUN.R")
+setwd("~/Dropbox/Jeffery He/iResearch/Publications/2012/HE2020-WFM-2L-ParametricApprox-TheorPopulBiol")
 
 #install.packages("RColorBrewer")
 library("RColorBrewer")
@@ -20,7 +18,8 @@ library("ggplot2")
 #install.packages("plot3D")
 library("plot3D")
 
-setwd("~/Dropbox/Jeffery He/iResearch/Publications/2012/HE2020-WFM-2L-ParametricApprox-TheorPopulBiol")
+#' R functions
+source("./Code/Code v1.0/RFUN.R")
 
 ########################################
 
@@ -519,7 +518,7 @@ frq_pth_Lacerda = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, 
 frq_pth_Terhorst = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", smp_siz)
 frq_pth_Paris = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", smp_siz)
 
-#################### 
+####################
 sim_frq_WFM <- matrix(NA, 4, smp_siz)
 sim_frq_MC <- matrix(NA, 4, smp_siz)
 sim_frq_Lacerda <- matrix(NA, 4, smp_siz)
@@ -684,7 +683,7 @@ frq_pth_Lacerda = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, i
 frq_pth_Terhorst = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", smp_siz)
 frq_pth_Paris = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", smp_siz)
 
-#################### 
+####################
 sim_frq_WFM <- matrix(NA, 4, smp_siz)
 sim_frq_MC <- matrix(NA, 4, smp_siz)
 sim_frq_Lacerda <- matrix(NA, 4, smp_siz)
@@ -845,7 +844,7 @@ frq_pth_Lacerda = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_si
 frq_pth_Terhorst = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", smp_siz)
 frq_pth_Paris = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", smp_siz)
 
-#################### 
+####################
 sim_frq_WFM <- matrix(NA, 4, smp_siz)
 sim_frq_MC <- matrix(NA, 4, smp_siz)
 sim_frq_Lacerda <- matrix(NA, 4, smp_siz)
