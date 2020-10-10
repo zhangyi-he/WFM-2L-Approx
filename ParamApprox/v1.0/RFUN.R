@@ -22,7 +22,7 @@ library("compiler")
 #enableJIT(1)
 
 # call C++ functions
-sourceCpp("./ParamApprox/v1.0/CFUN.cpp")
+sourceCpp("./Code/Code v1.0/CFUN.cpp")
 
 ################################################################################
 
@@ -104,9 +104,9 @@ approximateMoment <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_g
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
-  
+
   fts_mat <- calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  
+
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # Monte Carlo simulation
@@ -132,10 +132,10 @@ approximateMoment <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_g
     # the extension of Paris et al. (2019)
     Moments <- approximateMoment_Paris2ndOrder_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, fts_mat)
   }
-  
+
   mean = Moments$mean
   variance = Moments$variance
-  
+
   return(list(mean = mean,
               variance = variance))
 }
@@ -162,9 +162,9 @@ approximateWFM_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
-  
+
   fts_mat <- calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  
+
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # Monte Carlo simulation
@@ -182,10 +182,10 @@ approximateWFM_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int
     # the extension of Paris et al. (2019)
     Moments <- approximateMoment_Paris_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, fts_mat)
   }
-  
+
   mean = Moments$mean
   variance = Moments$variance
-  
+
   Moments_norm = approximatWFM_norm_arma(mean, variance)
   mean_norm = Moments_norm$mean
   var_norm = Moments_norm$variance
@@ -218,7 +218,7 @@ simulateWFM_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_ge
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
   fts_mat <- calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  
+
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # Monte Carlo simulation
@@ -236,14 +236,14 @@ simulateWFM_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_ge
     # the extension of Paris et al. (2019)
     Moments <- approximateMoment_Paris_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, fts_mat)
   }
-  
+
   mean = Moments$mean
   variance = Moments$variance
-  
+
   Moments_norm = approximatWFM_norm_arma(mean, variance)
   mean_norm = Moments_norm$mean
   var_norm = Moments_norm$variance
-  
+
   frq_pth = simulateWFM_norm_arma(mean_norm, var_norm, int_gen, lst_gen, smp_siz)
   return(frq_pth)
 }
@@ -270,9 +270,9 @@ approximateWFM_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
-  
+
   fts_mat <- calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  
+
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # Monte Carlo simulation
@@ -290,10 +290,10 @@ approximateWFM_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_
     # the extension of Paris et al. (2019)
     Moments <- approximateMoment_Paris_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, fts_mat)
   }
-  
+
   mean = Moments$mean
   variance = Moments$variance
-  
+
   Moments_loginorm = approximatWFM_LogisticNorm_arma(mean, variance, int_gen, lst_gen)
   location = Moments_loginorm$location
   squared_scale = Moments_loginorm$squared_scale
@@ -325,9 +325,9 @@ simulateWFM_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq
   sel_cof_B <- sel_cof[2]
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
-  
+
   fts_mat <- calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  
+
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # Monte Carlo simulation
@@ -345,10 +345,10 @@ simulateWFM_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq
     # the extension of Paris et al. (2019)
     Moments <- approximateMoment_Paris_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, fts_mat)
   }
-  
+
   mean = Moments$mean
   variance = Moments$variance
-  
+
   Moments_loginorm = approximatWFM_LogisticNorm_arma(mean, variance, int_gen, lst_gen)
   location = Moments_loginorm$location
   squared_scale = Moments_loginorm$squared_scale
@@ -380,7 +380,7 @@ approximateWFM_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, 
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
   fts_mat <- calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  
+
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # Monte Carlo simulation
@@ -398,10 +398,10 @@ approximateWFM_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, 
     # the extension of Paris et al. (2019)
     Moments <- approximateMoment_Paris_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, fts_mat)
   }
-  
+
   mean = Moments$mean
   variance = Moments$variance
-  
+
   Moments_hierabeta = approximatWFM_HierarchicalBeta_arma(mean, variance, int_gen, lst_gen)
   alpha = Moments_hierabeta$alpha
   beta = Moments_hierabeta$beta
@@ -435,7 +435,7 @@ simulateWFM_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int
   dom_par_A <- dom_par[1]
   dom_par_B <- dom_par[2]
   fts_mat <- calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B)
-  
+
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # Monte Carlo simulation
@@ -453,10 +453,10 @@ simulateWFM_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int
     # the extension of Paris et al. (2019)
     Moments <- approximateMoment_Paris_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B, rec_rat, pop_siz, int_frq, int_gen, lst_gen, fts_mat)
   }
-  
+
   mean = Moments$mean
   variance = Moments$variance
-  
+
   Moments_hierabeta = approximatWFM_HierarchicalBeta_arma(mean, variance, int_gen, lst_gen)
   alpha = Moments_hierabeta$alpha
   beta = Moments_hierabeta$beta
@@ -484,7 +484,7 @@ calculateRMSD <- function(smp_WFM, smp_WFD, grd_num, rnd_grd = TRUE) {
     frq_grd <- generateRndGridUnif_2L_arma(grd_num)
   } else {
     frq_grd <- generateFixGrid_2L_arma(grd_num)
-    
+
   }
   frq_grd <- data.table(frq_grd)
   setnames(frq_grd, c("A1B1", "A1B2", "A2B1", "A2B2"))
@@ -511,7 +511,7 @@ calculateRMSD_2nd <- function(smp_WFM, smp_WFD, int_gen, lst_gen, sim_num, grd_n
     #frq_grd <- generateRndGridUnif_2L_arma(grd_num)
   } else {
     frq_grd <- generateFixGrid_2L_arma(grd_num)
-    
+
   }
 
   dist <- rep(NA, length.out = dim(smp_WFM)[3])
@@ -520,7 +520,7 @@ calculateRMSD_2nd <- function(smp_WFM, smp_WFD, int_gen, lst_gen, sim_num, grd_n
   for (k in 1:dim(smp_WFM)[3]) {
     dist[k] <- sqrt(sum((cdf_WFM[, k] - cdf_WFD[, k])^2) / dim(smp_WFM)[1])
   }
-  
+
   return(dist)
 }
 #' Compiled version
