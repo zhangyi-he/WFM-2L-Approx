@@ -181,27 +181,25 @@ List approximateMoment_MonteCarlo_arma(const arma::dmat& fts_mat, const double& 
 
   // simulate the haplotype frequency trajectories under the Wright-Fisher model
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  for(arma::uword i = 1; i < sim_num; i++) {
+  for(arma::uword i = 0; i < sim_num; i++) {
     cout << "iteration: " << i + 1 << endl;
     frq_pth.slice(i) = simulateWFM_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen);
   }
 
   // declare the mean vector and variance matrix
-  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen));
+  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen));
 
   // calculate the mean vector and variance matrix
-  mu.col(0) = int_frq;
-  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4)
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat frq_smp = frq_pth.col(k);
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
+    arma::dmat frq_smp = frq_pth.col(k + 1);
     mu.col(k) = arma::mean(frq_smp, 1);
     sigma.slice(k) = arma::cov(frq_smp.t(), frq_smp.t());
   }
 
   // return the Monte Carlo approximations for the mean vector and variance matrix of the Wright-Fisher model
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
+  return List::create(Named("mean", mu.shed_col(0)),
+                      Named("variance", sigma.shed_slice(0)));
 }
 
 // Calculate the mean vector for the Wright-Fisher model
@@ -293,7 +291,7 @@ arma::cube calculateHessianMean_arma(const arma::dcolvec& hap_frq, const arma::d
 
 // Approximate the first two moments of the Wright-Fisher model using the extension of Lacerda & Seoighe (2014)
 // [[Rcpp::export]]
-List approximateMoment_Lacerda_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+List approximateMoment_Lacerda_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -311,15 +309,15 @@ List approximateMoment_Lacerda_arma(const arma::dmat fts_mat, const double& rec_
   }
 
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
+  return List::create(Named("mean", mu.shed_col(0)),
+                      Named("variance", sigma.shed_slice(0)));
 }
 
 
 
 // Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015)
 // [[Rcpp::export]]
-List approximateMoment_Terhorst_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+List approximateMoment_Terhorst_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -354,15 +352,15 @@ List approximateMoment_Terhorst_arma(const arma::dmat fts_mat, const double& rec
   }
 
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
+  return List::create(Named("mean", mu.shed_col(0)),
+                      Named("variance", sigma.shed_slice(0)));
 }
 
 
 
 // Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019) with the first-order Taylor expansion
 // [[Rcpp::export]]
-List approximateMoment_Paris1_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+List approximateMoment_Paris1_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -380,15 +378,15 @@ List approximateMoment_Paris1_arma(const arma::dmat fts_mat, const double& rec_r
   }
 
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
+  return List::create(Named("mean", mu.shed_col(0)),
+                      Named("variance", sigma.shed_slice(0)));
 }
 
 
 
 // Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019) with the second-order Taylor expansion
 // [[Rcpp::export]]
-List approximateMoment_Paris2_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+List approximateMoment_Paris2_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -414,8 +412,8 @@ List approximateMoment_Paris2_arma(const arma::dmat fts_mat, const double& rec_r
   }
 
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
+  return List::create(Named("mean", mu.shed_col(0)),
+                      Named("variance", sigma.shed_slice(0)));
 }
 /*************************/
 
@@ -536,9 +534,9 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
   arma::dcube frq_pth = simulateWFM_LogisticNorm_arma(location, scalesq, int_gen, lst_gen, sim_num);
 
   // calculate the mean vector and variance matrix
-  arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen));
+  arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen));
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
     arma::dmat frq_smp = frq_pth.col(k);
     mean.col(k) = arma::mean(frq_smp.t(), 0);
     variance.slice(k) = arma::cov(frq_smp.t());
@@ -556,9 +554,9 @@ List approximatWFM_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcu
   RNGScope scope;
 
   // calculate the parameters of the hierarchical beta approximation
-  arma::dmat alpha = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
-  arma::dmat beta = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen) + 1);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  arma::dmat alpha = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen));
+  arma::dmat beta = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen));
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
     // calculate the mean of the beta distributions
     arma::dcolvec m = arma::zeros<arma::dcolvec>(3);
     m(0) = mean(0, k) + mean(1, k);
@@ -588,8 +586,8 @@ arma::dcube simulateWFM_HierarchicalBeta_arma(const arma::dmat& alpha, const arm
   RNGScope scope;
 
   // simulate the haplotype frequency trajectories
-  arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen), sim_num);
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
     arma::dmat psi_frq = arma::zeros<arma::dmat>(3, sim_num);
     psi_frq.row(0) = as<arma::drowvec>(Rcpp::rbeta(sim_num, alpha(0, k), beta(0, k)));
     psi_frq.row(1) = as<arma::drowvec>(Rcpp::rbeta(sim_num, alpha(1, k), beta(1, k)));
@@ -612,9 +610,9 @@ List approximateMoment_HierarchicalBeta_arma(const arma::dmat& alpha, const arma
   RNGScope scope;
 
   // calculate the mean vector and variance matrix
-  arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen));
+  arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen));
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
     // calculate the mean and variance of the beta distributions
     arma::dcolvec m = alpha.col(k) / (alpha.col(k) + beta.col(k));
     arma::dcolvec V = alpha.col(k) % beta.col(k) / (alpha.col(k) + beta.col(k)) / (alpha.col(k) + beta.col(k)) / (alpha.col(k) + beta.col(k) + 1);
@@ -659,16 +657,15 @@ arma::dmat generateFixGrid_2L_arma(const arma::uword& grd_num) {
   RNGScope scope;
 
   arma::dmat frq_grd = arma::zeros<arma::dmat>(1, 4);
-  for (arma::uword i = 0; i < grd_num + 1; i++) {
-    for (arma::uword j = 0; j < grd_num + 1 - i; j++) {
-      for (arma::uword k = 0; k < grd_num + 1 - i - j; k++) {
+  for (arma::uword i = 1; i < grd_num; i++) {
+    for (arma::uword j = 1; j < grd_num - i; j++) {
+      for (arma::uword k = 1; k < grd_num - i - j; k++) {
         arma::drowvec hap_frq = {double(i), double(j), double(k), double(grd_num - i - j - k)};
         frq_grd.insert_rows(0, 1);
-        frq_grd.row(0) = hap_frq / double(grd_num);
+        frq_grd.row(0) = hap_frq /grd_num;
       }
     }
   }
-  frq_grd.shed_row(frq_grd.n_rows - 1);
 
   return frq_grd;
 }
@@ -692,28 +689,25 @@ arma::dmat generateRndGrid_2L_arma(const arma::uword& grd_num) {
 
 // calculate the empirical cumulative distribution function
 // [[Rcpp::export]]
-arma::dmat calculate_ECDF_2L_arma(const arma::dcube frq_pth, const int& int_gen, const int& lst_gen, const arma::uword& sim_num, const arma::dmat frq_grd) {
+arma::dmat calculateECDF_2L_arma(const arma::dcube& frq_pth, const arma::uword& sim_num, const arma::dmat& frq_grd) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat cdf = arma::zeros<arma::dmat>(arma::uword (frq_grd.n_rows), lst_gen - int_gen + 1);
-  for(arma::uword i = 1; i < lst_gen - int_gen + 1; i++) {
-    arma::dmat frq_pth_generation_k = frq_pth.slice(i);
-    arma::dcolvec cdf_k = arma::zeros<arma::dcolvec>(arma::uword (frq_grd.n_rows));
+  arma::dmat ECDF = arma::zeros<arma::dmat>(frq_grd.n_rows, frq_pth.n_cols - 1);
+  for(arma::uword k = 0; k < frq_pth.n_cols - 1; k++) {
+    arma::dmat frq_smp = frq_pth.col(k + 1);
+    arma::dcolvec cdf = arma::zeros<arma::dcolvec>(frq_grd.n_rows);
 
-    //substract the frq_grd from frq_pth and divide it by its absolute value.
-    for(arma::uword j = 1; j < arma::uword (frq_grd.n_rows); j++) {
-      arma::dcolvec condition_vec = arma::zeros<arma::dcolvec>(sim_num);
-      condition_vec = (frq_pth_generation_k.col(0) - frq_grd(j, 0)) / abs(frq_pth_generation_k.col(0) - frq_grd(j, 0)) + (frq_pth_generation_k.col(1) - frq_grd(j,1)) / abs(frq_pth_generation_k.col(1) - frq_grd(j,1)) + (frq_pth_generation_k.col(2) - frq_grd(j, 2)) / abs(frq_pth_generation_k.col(2) - frq_grd(j, 2));
-
-      // count how many points are within the grid 0 <= A1B1, A1B2, A2B1 <= frq_grd. Only accept it if the value is -3.
-      for(arma::uword k = 1; k < sim_num; k++) {
-        cdf_k(j) = cdf_k(j) + ((condition_vec(k) == -3) ? 1.0 : 0.0);
+    //
+    for(arma::uword i = 0; i < frq_grd.n_rows; i++) {
+      arma::dcolvec cond = arma::zeros<arma::dcolvec>(sim_num);
+      cond = (frq_smp.col(0) - frq_grd(i, 0)) / abs(frq_smp.col(0) - frq_grd(i, 0)) + (frq_smp.col(1) - frq_grd(i, 1)) / abs(frq_smp.col(1) - frq_grd(i, 1)) + (frq_smp.col(2) - frq_grd(i, 2)) / abs(frq_smp.col(2) - frq_grd(i, 2));
+      for(arma::uword j = 0; j < sim_num; j++) {
+        ECDF(i, k) = ECDF(i, k) + ((cond(j) == -3) ? 1.0 : 0.0);
       }
     }
-    cdf.col(i) = cdf_k;
   }
 
-  return cdf;
+  return ECDF;
 }
 /*************************/
