@@ -111,10 +111,18 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
   for (arma::uword t = 1; t < arma::uword(lst_gen - int_gen) * ptn_num + 1; t++) {
     // calculate the drift coefficient vector
     arma::dcolvec mu = arma::zeros<arma::dcolvec>(4);
-    mu(0) =  scl_sel_cof_A * frq_pth(0, t - 1) * (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) + scl_sel_cof_B * frq_pth(0, t - 1) * (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) - 0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
-    mu(1) =  scl_sel_cof_A * frq_pth(1, t - 1) * (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) - scl_sel_cof_B * frq_pth(1, t - 1) * (frq_pth(0, t - 1) + frq_pth(2, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) + 0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
-    mu(2) = -scl_sel_cof_A * frq_pth(2, t - 1) * (frq_pth(0, t - 1) + frq_pth(1, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) + scl_sel_cof_B * frq_pth(2, t - 1) * (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) + 0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
-    mu(3) = -scl_sel_cof_A * frq_pth(3, t - 1) * (frq_pth(0, t - 1) + frq_pth(1, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) - scl_sel_cof_B * frq_pth(3, t - 1) * (frq_pth(0, t - 1) + frq_pth(2, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) - 0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
+    mu(0) =  scl_sel_cof_A * frq_pth(0, t - 1) * (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) +
+      scl_sel_cof_B * frq_pth(0, t - 1) * (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) -
+      0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
+    mu(1) =  scl_sel_cof_A * frq_pth(1, t - 1) * (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) -
+      scl_sel_cof_B * frq_pth(1, t - 1) * (frq_pth(0, t - 1) + frq_pth(2, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) +
+      0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
+    mu(2) = -scl_sel_cof_A * frq_pth(2, t - 1) * (frq_pth(0, t - 1) + frq_pth(1, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) +
+      scl_sel_cof_B * frq_pth(2, t - 1) * (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) +
+      0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
+    mu(3) = -scl_sel_cof_A * frq_pth(3, t - 1) * (frq_pth(0, t - 1) + frq_pth(1, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(1, t - 1)) * dom_par_A + (frq_pth(2, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_A)) -
+      scl_sel_cof_B * frq_pth(3, t - 1) * (frq_pth(0, t - 1) + frq_pth(2, t - 1)) * ((frq_pth(0, t - 1) + frq_pth(2, t - 1)) * dom_par_B + (frq_pth(1, t - 1) + frq_pth(3, t - 1)) * (1 - dom_par_B)) -
+      0.5 * scl_rec_rat * (frq_pth(0, t - 1) * frq_pth(3, t - 1) - frq_pth(1, t - 1) * frq_pth(2, t - 1));
 
     // calculate the diffusion coefficient matrix
     arma::dmat sigma = arma::zeros<arma::dmat>(4, 6);
@@ -134,7 +142,7 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
     sigma(2, 1) = -pow(frq_pth(2, t - 1) * frq_pth(0, t - 1), 0.5);
     // sigma(2, 2) = 0;
     sigma(2, 3) = -pow(frq_pth(2, t - 1) * frq_pth(1, t - 1), 0.5);
-    sigma(2, 4) = 0;
+    // sigma(2, 4) = 0;
     sigma(2, 5) = pow(frq_pth(2, t - 1) * frq_pth(3, t - 1), 0.5);
     // sigma(3, 0) = 0;
     // sigma(3, 1) = 0;
@@ -167,14 +175,11 @@ arma::dmat simulateDiffusApprox_arma(const double& sel_cof_A, const double& dom_
 /***** MomentApprox ******/
 // Approximate the first two moments of the Wright-Fisher model using Monte Carlo simulation
 // [[Rcpp::export]]
-List approximateMoment_MonteCarlo_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+List approximateMoment_MonteCarlo_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // calculate the fitness matrix
-  arma::dmat fts_mat = calculateFitnessMat_arma(sel_cof_A, dom_par_A, sel_cof_B, dom_par_B);
-
-  // simulate the haplotype frequency trajectories
+  // simulate the haplotype frequency trajectories under the Wright-Fisher model
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword i = 1; i < sim_num; i++) {
     cout << "iteration: " << i + 1 << endl;
@@ -224,33 +229,24 @@ arma::dmat calculateJacobianMean_arma(const arma::dcolvec& hap_frq, const arma::
   RNGScope scope;
 
   // calculate the marginal and mean fitness
-  arma::dcolvec marginal_fitness = sum(fts_mat * hap_frq, 1);
-  double mean_fitness = arma::as_scalar(sum(sum(fts_mat % (hap_frq * hap_frq.t()), 0), 1));
+  arma::dcolvec fts_vec = fts_mat * hap_frq;
+  double fts_val = arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
 
   // initialise eta
   arma::dcolvec eta = {-1.0, 1.0, 1.0, -1.0};
 
   //
-  arma::dcolvec q = (marginal_fitness % hap_frq) / mean_fitness;
+  arma::dcolvec q = (hap_frq % fts_vec) / fts_val;
   arma::dmat Q = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword i = 0; i < 4; i++) {
     Q.col(i) = q + pow(-1, i) * eta * q(3 - i);
   }
 
   // calculate the Jacobian matrix over the mean vector
-  arma::dmat jacobian_mu = (arma::eye(4, 4) + rec_rat * Q) * (arma::diagmat(hap_frq) * (fts_mat / mean_fitness - 2 * (marginal_fitness / mean_fitness) * (marginal_fitness.t() / mean_fitness)) + arma::diagmat(marginal_fitness / mean_fitness));
+  arma::dmat Jacobian_mu = (arma::eye<arma::dmat>(4, 4) + rec_rat * Q) * (arma::diagmat(hap_frq) * (fts_mat / fts_val - 2 * (fts_vec / fts_val) * (fts_vec.t() / fts_val)) + arma::diagmat(fts_vec / fts_val));
 
   // return the Jacobian matrix over the mean vector
-  return jacobian_mu;
-}
-
-// Calculate the kronecker delta function for two values x and y 
-// [[Rcpp::export]]
-int delta(const double& x, const double& y) {
-  
-  int delta = -(0 || (x - y)) + 1;
-  // return the kronecker delta values: 1 if x = y, 0 else.
-  return delta;
+  return Jacobian_mu;
 }
 
 // Calculate the Hessian matrix over the mean vector for the Wright-Fisher model
@@ -258,43 +254,46 @@ int delta(const double& x, const double& y) {
 arma::cube calculateHessianMean_arma(const arma::dcolvec& hap_frq, const arma::dmat& fts_mat, const double& rec_rat){
   // ensure RNG gets set/reset
   RNGScope scope;
-  
+
   // calculate the marginal and mean fitness
-  arma::dcolvec marginal_fitness = sum(fts_mat * hap_frq, 1);
-  double mean_fitness = arma::as_scalar(sum(sum(fts_mat % (hap_frq * hap_frq.t()), 0), 1));
-  arma::dcolvec q = (marginal_fitness % hap_frq) / mean_fitness;
-  
+  arma::dcolvec fts_vec = fts_mat * hap_frq;
+  double fts_val = arma::as_scalar(hap_frq.t() * fts_mat * hap_frq);
+
+  //
+  arma::dcolvec q = (hap_frq % fts_vec) / fts_val;
+
   // calculate the Hessian matrix over the mean vector
   arma::dmat Jacobian_q = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword i = 0; i < 4; i++) {
-    for(arma::uword k = 0; k < 4; k++) {
-      Jacobian_q(i, k) = (fts_mat(i, k) * hap_frq(i) + marginal_fitness(i) * delta(i, k)) / mean_fitness - 2 * marginal_fitness(i) * marginal_fitness(k) * hap_frq(i) / mean_fitness / mean_fitness;
+    for(arma::uword j = 0; j < 4; j++) {
+      Jacobian_q(i, j) = (fts_mat(i, j) * hap_frq(i) + fts_vec(i) * ((i == j) ? 1.0 : 0.0)) / fts_val - 2 * fts_vec(i) * fts_vec(j) * hap_frq(i) / fts_val / fts_val;
     }
   }
   arma::cube Hessian_q = arma::zeros<arma::dcube>(4, 4, 4);
   for(arma::uword i = 0; i < 4; i++) {
-    for(arma::uword k = 0; k < 4; k++) {
-      for(arma::uword l = 0; l < 4; l++) {
-        Hessian_q(i, k, l) = fts_mat(l, k) * (delta(l, i) + delta(i, k)) / mean_fitness - 2 * (fts_mat(i, k) * marginal_fitness(l) * hap_frq(i) + fts_mat(i, l) * marginal_fitness(k) * hap_frq(i) + fts_mat(k, l) * marginal_fitness(i) * hap_frq(i) + marginal_fitness(k) * marginal_fitness(l) * (delta(i, k) + delta(i, l))) / mean_fitness / mean_fitness + 8 * (marginal_fitness(i) * marginal_fitness(k) * marginal_fitness(l) * hap_frq(i)) / mean_fitness / mean_fitness / mean_fitness;
+    for(arma::uword j = 0; j < 4; j++) {
+      for(arma::uword k = 0; k < 4; k++) {
+        Hessian_q(i, j, k) = fts_mat(k, j) * (((k == i) ? 1.0 : 0.0) + ((i == j) ? 1.0 : 0.0)) / fts_val - 2 * (fts_mat(i, j) * fts_vec(k) * hap_frq(i) + fts_mat(i, k) * fts_vec(j) * hap_frq(i) + fts_mat(j, k) * fts_vec(i) * hap_frq(i) + fts_vec(j) * fts_vec(k) * ((j == i) ? 1.0 : 0.0) + ((i == k) ? 1.0 : 0.0))) / fts_val / fts_val + 8 * (fts_vec(i) * fts_vec(j) * fts_vec(k) * hap_frq(i)) / fts_val / fts_val / fts_val;
       }
     }
   }
   arma::cube Hessian_mu = arma::zeros<arma::dcube>(4, 4, 4);
   for(arma::uword i = 0; i < 4; i++) {
     for(arma::uword j = 0; j < 4; j++) {
-      Hessian_mu(0, i, j) = (1 - rec_rat) * Hessian_q(0, i, j) + rec_rat * ((Hessian_q(0, i, j) + Hessian_q(1, i, j)) * (q(0) + q(2)) + (Jacobian_q(0, j) + Jacobian_q(1, j)) * (Jacobian_q(0,i) + Jacobian_q(2, i)) + (Jacobian_q(0, i) + Jacobian_q(1, i)) * (Jacobian_q(0,j) + Jacobian_q(2, j)) + (q(0) + q(1)) * (Hessian_q(0, i, j) + Hessian_q(2, i, j)));
-      Hessian_mu(1, i, j) = (1 - rec_rat) * Hessian_q(1, i, j) + rec_rat * ((Hessian_q(0, i, j) + Hessian_q(1, i, j)) * (q(1) + q(3)) + (Jacobian_q(0, j) + Jacobian_q(1, j)) * (Jacobian_q(1,i) + Jacobian_q(3, i)) + (Jacobian_q(0, i) + Jacobian_q(1, i)) * (Jacobian_q(1,j) + Jacobian_q(3, j)) + (q(0) + q(1)) * (Hessian_q(1, i, j) + Hessian_q(3, i, j)));
-      Hessian_mu(2, i, j) = (1 - rec_rat) * Hessian_q(2, i, j) + rec_rat * ((Hessian_q(2, i, j) + Hessian_q(3, i, j)) * (q(0) + q(2)) + (Jacobian_q(2, j) + Jacobian_q(3, j)) * (Jacobian_q(0,i) + Jacobian_q(2, i)) + (Jacobian_q(2, i) + Jacobian_q(3, i)) * (Jacobian_q(0,j) + Jacobian_q(2, j)) + (q(2) + q(3)) * (Hessian_q(0, i, j) + Hessian_q(2, i, j)));
-      Hessian_mu(3, i, j) = (1 - rec_rat) * Hessian_q(3, i, j) + rec_rat * ((Hessian_q(2, i, j) + Hessian_q(3, i, j)) * (q(1) + q(3)) + (Jacobian_q(2, j) + Jacobian_q(3, j)) * (Jacobian_q(1,i) + Jacobian_q(3, i)) + (Jacobian_q(2, i) + Jacobian_q(3, i)) * (Jacobian_q(1,j) + Jacobian_q(3, j)) + (q(2) + q(3)) * (Hessian_q(1, i, j) + Hessian_q(3, i, j)));
+      Hessian_mu(0, i, j) = (1 - rec_rat) * Hessian_q(0, i, j) + rec_rat * ((Hessian_q(0, i, j) + Hessian_q(1, i, j)) * (q(0) + q(2)) + (Jacobian_q(0, j) + Jacobian_q(1, j)) * (Jacobian_q(0, i) + Jacobian_q(2, i)) + (Jacobian_q(0, i) + Jacobian_q(1, i)) * (Jacobian_q(0, j) + Jacobian_q(2, j)) + (q(0) + q(1)) * (Hessian_q(0, i, j) + Hessian_q(2, i, j)));
+      Hessian_mu(1, i, j) = (1 - rec_rat) * Hessian_q(1, i, j) + rec_rat * ((Hessian_q(0, i, j) + Hessian_q(1, i, j)) * (q(1) + q(3)) + (Jacobian_q(0, j) + Jacobian_q(1, j)) * (Jacobian_q(1, i) + Jacobian_q(3, i)) + (Jacobian_q(0, i) + Jacobian_q(1, i)) * (Jacobian_q(1, j) + Jacobian_q(3, j)) + (q(0) + q(1)) * (Hessian_q(1, i, j) + Hessian_q(3, i, j)));
+      Hessian_mu(2, i, j) = (1 - rec_rat) * Hessian_q(2, i, j) + rec_rat * ((Hessian_q(2, i, j) + Hessian_q(3, i, j)) * (q(0) + q(2)) + (Jacobian_q(2, j) + Jacobian_q(3, j)) * (Jacobian_q(0, i) + Jacobian_q(2, i)) + (Jacobian_q(2, i) + Jacobian_q(3, i)) * (Jacobian_q(0, j) + Jacobian_q(2, j)) + (q(2) + q(3)) * (Hessian_q(0, i, j) + Hessian_q(2, i, j)));
+      Hessian_mu(3, i, j) = (1 - rec_rat) * Hessian_q(3, i, j) + rec_rat * ((Hessian_q(2, i, j) + Hessian_q(3, i, j)) * (q(1) + q(3)) + (Jacobian_q(2, j) + Jacobian_q(3, j)) * (Jacobian_q(1, i) + Jacobian_q(3, i)) + (Jacobian_q(2, i) + Jacobian_q(3, i)) * (Jacobian_q(1, j) + Jacobian_q(3, j)) + (q(2) + q(3)) * (Hessian_q(1, i, j) + Hessian_q(3, i, j)));
     }
   }
+
   // return the Hessian matrix over the mean vector
   return Hessian_mu;
 }
 
 // Approximate the first two moments of the Wright-Fisher model using the extension of Lacerda & Seoighe (2014)
 // [[Rcpp::export]]
-List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
+List approximateMoment_Lacerda_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -306,9 +305,9 @@ List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_p
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
+    arma::dmat Jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
-    sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) / 2 / pop_siz + jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
+    sigma.slice(k) = (1.0 / 2 / pop_siz) * (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) + Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
   }
 
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
@@ -316,9 +315,11 @@ List approximateMoment_Lacerda_arma(const double& sel_cof_A, const double& dom_p
                       Named("variance", sigma));
 }
 
-// Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015)
+
+
+// Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015) with the first-order Taylor expansion
 // [[Rcpp::export]]
-List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
+List approximateMoment_Terhorst1_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -334,11 +335,11 @@ List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
+    arma::dmat Jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
     x.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat);
-    epsilon.col(k) = jacobian_mu * epsilon.col(k - 1);
+    epsilon.col(k) = Jacobian_mu * epsilon.col(k - 1);
     mu.col(k) = x.col(k) + epsilon.col(k);
-    sigma.slice(k) = 1.0 / 2 / pop_siz * arma::diagmat(mu.col(k)) - 1.0 / 2 / pop_siz * mu.col(k) * mu.col(k).t() + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
+    sigma.slice(k) = (1.0 / 2 / pop_siz) * (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) + (1 - 1.0 / 2 / pop_siz) * Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
   }
 
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
@@ -346,19 +347,19 @@ List approximateMoment_Terhorst_arma(const double& sel_cof_A, const double& dom_
                       Named("variance", sigma));
 }
 
-// Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015)
+// Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015) with the second-order Taylor expansion
 // [[Rcpp::export]]
-List approximateMoment_Terhorst2ndOrder_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
+List approximateMoment_Terhorst2_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
-  
+
   // declare the mean vector and variance matrix
   arma::dmat x = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat epsilon = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube epsilon_2ndOrder = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  
+
   // calculate the mean vector and variance matrix
   x.col(0) = int_frq;
   // epsilon.col(0) = arma::zeros<arma::dcolvec>(4);
@@ -366,7 +367,7 @@ List approximateMoment_Terhorst2ndOrder_arma(const double& sel_cof_A, const doub
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   // epsilon_2ndOrder.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
+    arma::dmat Jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
     arma::dcube Hessian_mu = calculateHessianMean_arma(x.col(k - 1), fts_mat, rec_rat);
     arma::dcolvec SecndOrder_term = arma::zeros<arma::dcolvec>(4);
     arma::dmat epsilon_2ndOrder_k_minus_1 = epsilon_2ndOrder.slice(k - 1);
@@ -374,22 +375,24 @@ List approximateMoment_Terhorst2ndOrder_arma(const double& sel_cof_A, const doub
       arma::dmat Hessian_mu_i = Hessian_mu.row(i);
       SecndOrder_term(i) = 0.5 * arma::as_scalar(sum(sum(Hessian_mu_i % epsilon_2ndOrder_k_minus_1, 0), 1));
     }
-    
+
     x.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat);
-    epsilon.col(k) = jacobian_mu * epsilon.col(k - 1) + SecndOrder_term;
+    epsilon.col(k) = Jacobian_mu * epsilon.col(k - 1) + SecndOrder_term;
     mu.col(k) = x.col(k) + epsilon.col(k);
-    sigma.slice(k) = 1.0 / 2 / pop_siz * arma::diagmat(x.col(k) + jacobian_mu * epsilon.col(k - 1)) - 1.0 / 2 / pop_siz * (x.col(k) * x.col(k).t() + jacobian_mu * epsilon.col(k - 1) * x.col(k).t() + x.col(k) * (jacobian_mu * epsilon.col(k - 1)).t() + jacobian_mu * epsilon_2ndOrder_k_minus_1 * jacobian_mu) + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
+    sigma.slice(k) = 1.0 / 2 / pop_siz * arma::diagmat(x.col(k) + Jacobian_mu * epsilon.col(k - 1)) - 1.0 / 2 / pop_siz * (x.col(k) * x.col(k).t() + Jacobian_mu * epsilon.col(k - 1) * x.col(k).t() + x.col(k) * (Jacobian_mu * epsilon.col(k - 1)).t() + Jacobian_mu * epsilon_2ndOrder_k_minus_1 * Jacobian_mu) + (1 - 1.0 / 2 / pop_siz) * Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
     epsilon_2ndOrder.slice(k) = sigma.slice(k) + epsilon.col(k) * epsilon.col(k).t();
   }
-  
+
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
   return List::create(Named("mean", mu),
                       Named("variance", sigma));
 }
 
-// Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019)
+
+
+// Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019) with the first-order Taylor expansion
 // [[Rcpp::export]]
-List approximateMoment_Paris2ndOrder_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
+List approximateMoment_Paris1_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -401,43 +404,45 @@ List approximateMoment_Paris2ndOrder_arma(const double& sel_cof_A, const double&
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
+    arma::dmat Jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
+    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
+    sigma.slice(k) = (1.0 / 2 / pop_siz) * (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) + (1 - 1.0 / 2 / pop_siz) * Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
+  }
+
+  // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
+  return List::create(Named("mean", mu),
+                      Named("variance", sigma));
+}
+
+
+
+// Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019) with the second-order Taylor expansion
+// [[Rcpp::export]]
+List approximateMoment_Paris2_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  // declare the mean vector and variance matrix
+  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
+
+  // calculate the mean vector and variance matrix
+  mu.col(0) = int_frq;
+  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
+  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    arma::dmat Jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     arma::dcube Hessian_mu = calculateHessianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     arma::dcolvec SecndOrder_term = arma::zeros<arma::dcolvec>(4);
     arma::dmat sigma_k_minus_1 = sigma.slice(k - 1);
     for(arma::uword i = 1; i < 4; i++) {
       arma::dmat Hessian_mu_i = Hessian_mu.row(i);
-      
+
       SecndOrder_term(i) = 0.5 * arma::as_scalar(sum(sum(Hessian_mu_i % sigma_k_minus_1, 0), 1));
     }
-    sigma.slice(k) = (arma::diagmat(mu.col(k) + SecndOrder_term) - (mu.col(k) + SecndOrder_term) * (mu.col(k) + SecndOrder_term).t()) / 2 / pop_siz + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
+    sigma.slice(k) = (arma::diagmat(mu.col(k) + SecndOrder_term) - (mu.col(k) + SecndOrder_term) * (mu.col(k) + SecndOrder_term).t()) / 2 / pop_siz + (1 - 1.0 / 2 / pop_siz) * Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
   }
 
-  // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
-}
-
-// Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019)
-// [[Rcpp::export]]
-List approximateMoment_Paris_arma(const double& sel_cof_A, const double& dom_par_A, const double& sel_cof_B, const double& dom_par_B, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen, const arma::dmat fts_mat) {
-  // ensure RNG gets set/reset
-  RNGScope scope;
-  
-  // declare the mean vector and variance matrix
-  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  
-  // calculate the mean vector and variance matrix
-  mu.col(0) = int_frq;
-  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
-    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
-    sigma.slice(k) = (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) / 2 / pop_siz + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
-  }
-  
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
   return List::create(Named("mean", mu),
                       Named("variance", sigma));
@@ -467,7 +472,7 @@ arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& var
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  // simulate the haplotype frequency trajectories
+  // simulate the haplotype frequency trajectories under the normal approximation
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     frq_pth.col(k) = arma::mvnrnd(mean.col(k), variance.slice(k), sim_num);
@@ -476,6 +481,8 @@ arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& var
   // return the haplotype frequency trajectories under the normal approximation
   return frq_pth;
 }
+
+
 
 // Calculate the location vector for the logistic normal approximation
 // [[Rcpp::export]]
@@ -500,16 +507,16 @@ arma::dcube calculateJacobianLocation_arma(const arma::dmat& hap_frq){
   RNGScope scope;
 
   // calculate the Jacobian matrix over the location vector
-  arma::dcube jacobian_phi = arma::zeros<arma::dcube>(3, 4, hap_frq.n_cols);
-  jacobian_phi.tube(0, 0) = 1.0 / hap_frq.row(0);
-  jacobian_phi.tube(1, 1) = 1.0 / hap_frq.row(1);
-  jacobian_phi.tube(2, 2) = 1.0 / hap_frq.row(2);
-  jacobian_phi.tube(0, 3) = -1.0 / hap_frq.row(3);
-  jacobian_phi.tube(1, 3) = -1.0 / hap_frq.row(3);
-  jacobian_phi.tube(2, 3) = -1.0 / hap_frq.row(3);
+  arma::dcube Jacobian_phi = arma::zeros<arma::dcube>(3, 4, hap_frq.n_cols);
+  Jacobian_phi.tube(0, 0) = 1.0 / hap_frq.row(0);
+  Jacobian_phi.tube(1, 1) = 1.0 / hap_frq.row(1);
+  Jacobian_phi.tube(2, 2) = 1.0 / hap_frq.row(2);
+  Jacobian_phi.tube(0, 3) = -1.0 / hap_frq.row(3);
+  Jacobian_phi.tube(1, 3) = -1.0 / hap_frq.row(3);
+  Jacobian_phi.tube(2, 3) = -1.0 / hap_frq.row(3);
 
   // return the Jacobian matrix over the location vector
-  return jacobian_phi;
+  return Jacobian_phi;
 }
 
 // Approximate the Wright-Fisher model using the logistic normal distribution
@@ -519,11 +526,11 @@ List approximatWFM_LogisticNorm_arma(const arma::dmat& mean, const arma::dcube& 
   RNGScope scope;
 
   // calculate the parameters of the logistic normal approximation
-  arma::dcube jacobian_location = calculateJacobianLocation_arma(mean);
+  arma::dcube Jacobian_location = calculateJacobianLocation_arma(mean);
   arma::dmat location = calculateLocation_arma(mean);
   arma::dcube squared_scale = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen) + 1);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    squared_scale.slice(k) = jacobian_location.slice(k) * variance.slice(k) * jacobian_location.slice(k).t();
+    squared_scale.slice(k) = Jacobian_location.slice(k) * variance.slice(k) * Jacobian_location.slice(k).t();
   }
 
   // return the parameters of the logistic normal approximation
@@ -589,6 +596,8 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
                       Named("variance", variance));
 }
 
+
+
 // Approximate the Wright-Fisher model using the hierarchical beta distribution
 // [[Rcpp::export]]
 List approximatWFM_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen) {
@@ -634,7 +643,7 @@ arma::dcube simulateWFM_HierarchicalBeta_arma(const arma::dmat& alpha, const arm
     psi_frq.row(0) = as<arma::drowvec>(Rcpp::rbeta(sim_num, alpha(0, k), beta(0, k)));
     psi_frq.row(1) = as<arma::drowvec>(Rcpp::rbeta(sim_num, alpha(1, k), beta(1, k)));
     psi_frq.row(2) = as<arma::drowvec>(Rcpp::rbeta(sim_num, alpha(2, k), beta(2, k)));
-    
+
     frq_pth.tube(0, k) = psi_frq.row(0) % psi_frq.row(1);
     frq_pth.tube(1, k) = psi_frq.row(0) % (1 - psi_frq.row(1));
     frq_pth.tube(2, k) = (1 - psi_frq.row(0)) % psi_frq.row(2);
@@ -688,9 +697,10 @@ List approximateMoment_HierarchicalBeta_arma(const arma::dmat& alpha, const arma
   return List::create(Named("mean", mean),
                       Named("variance", variance));
 }
-
 /*************************/
 
+
+/********* ECDF **********/
 // Generate the grids for empirical cumulative distribution function
 // [[Rcpp::export]]
 arma::dmat generateFixGrid_2L_arma(const arma::uword& grd_num) {
@@ -731,27 +741,28 @@ arma::dmat generateRndGrid_2L_arma(const arma::uword& grd_num) {
 
 // calculate the empirical cumulative distribution function
 // [[Rcpp::export]]
-arma::dmat calculate_empirical_cdf_2L_arma(const arma::dcube frq_pth, const int& int_gen, const int& lst_gen, const arma::uword& sim_num, const arma::dmat frq_grd) {
+arma::dmat calculate_ECDF_2L_arma(const arma::dcube frq_pth, const int& int_gen, const int& lst_gen, const arma::uword& sim_num, const arma::dmat frq_grd) {
   // ensure RNG gets set/reset
   RNGScope scope;
-  
+
   arma::dmat cdf = arma::zeros<arma::dmat>(arma::uword (frq_grd.n_rows), lst_gen - int_gen + 1);
   for(arma::uword i = 1; i < lst_gen - int_gen + 1; i++) {
     arma::dmat frq_pth_generation_k = frq_pth.slice(i);
     arma::dcolvec cdf_k = arma::zeros<arma::dcolvec>(arma::uword (frq_grd.n_rows));
-    
+
     //substract the frq_grd from frq_pth and divide it by its absolute value.
     for(arma::uword j = 1; j < arma::uword (frq_grd.n_rows); j++) {
       arma::dcolvec condition_vec = arma::zeros<arma::dcolvec>(sim_num);
       condition_vec = (frq_pth_generation_k.col(0) - frq_grd(j, 0)) / abs(frq_pth_generation_k.col(0) - frq_grd(j, 0)) + (frq_pth_generation_k.col(1) - frq_grd(j,1)) / abs(frq_pth_generation_k.col(1) - frq_grd(j,1)) + (frq_pth_generation_k.col(2) - frq_grd(j, 2)) / abs(frq_pth_generation_k.col(2) - frq_grd(j, 2));
-      
+
       // count how many points are within the grid 0 <= A1B1, A1B2, A2B1 <= frq_grd. Only accept it if the value is -3.
       for(arma::uword k = 1; k < sim_num; k++) {
-        cdf_k(j) = cdf_k(j) + delta(condition_vec(k), -3);
+        cdf_k(j) = cdf_k(j) + ((condition_vec(k) == -3) ? 1.0 : 0.0);
       }
     }
     cdf.col(i) = cdf_k;
   }
-  
+
   return cdf;
 }
+/*************************/
