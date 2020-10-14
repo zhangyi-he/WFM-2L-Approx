@@ -421,21 +421,6 @@ List approximateMoment_Paris2_arma(const arma::dmat fts_mat, const double& rec_r
 
 
 /****** ParamApprox ******/
-// Approximate the Wright-Fisher model using the normal distribution
-// [[Rcpp::export]]
-List approximatWFM_norm_arma(const arma::dmat& mean, const arma::dcube& variance) {
-  // ensure RNG gets set/reset
-  RNGScope scope;
-
-  // calculate the parameters of the normal approximation
-  arma::dmat mu = mean;
-  arma::dcube sigma = variance;
-
-  // return the parameters of the normal approximation
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
-}
-
 // Simulate the Wright-Fisher model using the normal approximation
 // [[Rcpp::export]]
 arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
@@ -443,11 +428,8 @@ arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& var
   RNGScope scope;
 
   // simulate the haplotype frequency trajectories under the normal approximation
-  arma::dcube frq_pth = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  arma::dmat int_frq = arma::zeros<arma::dmat>(4, sim_num);
-  int_frq.each_col() += mean.col(0);
-  frq_pth.col(0) = int_frq;
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  arma::dcube frq_pth = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen), sim_num);
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
     frq_pth.col(k) = arma::mvnrnd(mean.col(k), variance.slice(k), sim_num);
   }
 
@@ -498,9 +480,9 @@ List approximatWFM_LogisticNorm_arma(const arma::dmat& mean, const arma::dcube& 
 
   // calculate the parameters of the logistic normal approximation
   arma::dmat location = calculateLocation_arma(mean);
-  arma::dcube scalesq = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube scalesq = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen));
   arma::dcube Jacobian_location = calculateJacobianLocation_arma(mean);
-  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
     scalesq.slice(k) = Jacobian_location.slice(k) * variance.slice(k) * Jacobian_location.slice(k).t();
   }
 
@@ -534,8 +516,8 @@ arma::dcube simulateWFM_LogisticNorm_arma(const arma::dmat& location, const arma
   RNGScope scope;
 
   // simulate the haplotype frequency trajectories under the logistic normal approximation
-  arma::dcube frq_pth = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  arma::dcube frq_pth = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen), sim_num);
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
     arma::dmat phi_frq = arma::mvnrnd(location.col(k), scalesq.slice(k), sim_num);
     frq_pth.col(k) = calculateALT_arma(phi_frq);
   }
@@ -556,7 +538,7 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
   // calculate the mean vector and variance matrix
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube variance = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     arma::dmat frq_smp = frq_pth.col(k);
     mean.col(k) = arma::mean(frq_smp.t(), 0);
     variance.slice(k) = arma::cov(frq_smp.t());
@@ -566,8 +548,6 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
   return List::create(Named("mean", mean),
                       Named("variance", variance));
 }
-
-
 
 // Approximate the Wright-Fisher model using the hierarchical beta distribution
 // [[Rcpp::export]]
@@ -609,7 +589,7 @@ arma::dcube simulateWFM_HierarchicalBeta_arma(const arma::dmat& alpha, const arm
 
   // simulate the haplotype frequency trajectories
   arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
-  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     arma::dmat psi_frq = arma::zeros<arma::dmat>(3, sim_num);
     psi_frq.row(0) = as<arma::drowvec>(Rcpp::rbeta(sim_num, alpha(0, k), beta(0, k)));
     psi_frq.row(1) = as<arma::drowvec>(Rcpp::rbeta(sim_num, alpha(1, k), beta(1, k)));
@@ -682,9 +662,9 @@ arma::dmat generateFixGrid_2L_arma(const arma::uword& grd_num) {
   for (arma::uword i = 0; i < grd_num + 1; i++) {
     for (arma::uword j = 0; j < grd_num + 1 - i; j++) {
       for (arma::uword k = 0; k < grd_num + 1 - i - j; k++) {
-        arma::drowvec frq = {double(i), double(j), double(k), double(grd_num - i - j - k)};
+        arma::drowvec hap_frq = {double(i), double(j), double(k), double(grd_num - i - j - k)};
         frq_grd.insert_rows(0, 1);
-        frq_grd.row(0) = frq / double(grd_num);
+        frq_grd.row(0) = hap_frq / double(grd_num);
       }
     }
   }
