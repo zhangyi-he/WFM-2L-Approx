@@ -317,39 +317,9 @@ List approximateMoment_Lacerda_arma(const arma::dmat fts_mat, const double& rec_
 
 
 
-// Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015) with the first-order Taylor expansion
+// Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015)
 // [[Rcpp::export]]
-List approximateMoment_Terhorst1_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
-  // ensure RNG gets set/reset
-  RNGScope scope;
-
-  // declare the mean vector and variance matrix
-  arma::dmat x = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dmat epsilon = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
-  arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
-
-  // calculate the mean vector and variance matrix
-  x.col(0) = int_frq;
-  // epsilon.col(0) = arma::zeros<arma::dcolvec>(4);
-  mu.col(0) = int_frq;
-  // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat Jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
-    x.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat);
-    epsilon.col(k) = Jacobian_mu * epsilon.col(k - 1);
-    mu.col(k) = x.col(k) + epsilon.col(k);
-    sigma.slice(k) = (1.0 / 2 / pop_siz) * (arma::diagmat(mu.col(k)) - mu.col(k) * mu.col(k).t()) + (1 - 1.0 / 2 / pop_siz) * Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
-  }
-
-  // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
-  return List::create(Named("mean", mu),
-                      Named("variance", sigma));
-}
-
-// Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015) with the second-order Taylor expansion
-// [[Rcpp::export]]
-List approximateMoment_Terhorst2_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
+List approximateMoment_Terhorst_arma(const arma::dmat fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -473,7 +443,10 @@ arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& var
   RNGScope scope;
 
   // simulate the haplotype frequency trajectories under the normal approximation
-  arma::dcube frq_pth(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
+  arma::dcube frq_pth = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
+  arma::dmat int_frq = arma::zeros<arma::dmat>(4, sim_num);
+  int_frq.each_col() += mean.col(0);
+  frq_pth.col(0) = int_frq;
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
     frq_pth.col(k) = arma::mvnrnd(mean.col(k), variance.slice(k), sim_num);
   }
@@ -481,8 +454,6 @@ arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& var
   // return the haplotype frequency trajectories under the normal approximation
   return frq_pth;
 }
-
-
 
 // Calculate the location vector for the logistic normal approximation
 // [[Rcpp::export]]
@@ -526,16 +497,16 @@ List approximatWFM_LogisticNorm_arma(const arma::dmat& mean, const arma::dcube& 
   RNGScope scope;
 
   // calculate the parameters of the logistic normal approximation
-  arma::dcube Jacobian_location = calculateJacobianLocation_arma(mean);
   arma::dmat location = calculateLocation_arma(mean);
-  arma::dcube squared_scale = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen) + 1);
-  for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    squared_scale.slice(k) = Jacobian_location.slice(k) * variance.slice(k) * Jacobian_location.slice(k).t();
+  arma::dcube scalesq = arma::zeros<arma::dcube>(3, 3, arma::uword(lst_gen - int_gen) + 1);
+  arma::dcube Jacobian_location = calculateJacobianLocation_arma(mean);
+  for(arma::uword k = 0; k < arma::uword(lst_gen - int_gen) + 1; k++) {
+    scalesq.slice(k) = Jacobian_location.slice(k) * variance.slice(k) * Jacobian_location.slice(k).t();
   }
 
   // return the parameters of the logistic normal approximation
   return List::create(Named("location", location),
-                      Named("squared_scale", squared_scale));
+                      Named("scalesq", scalesq));
 }
 
 // Calculate the additive logistic transformation
@@ -558,14 +529,14 @@ arma::dmat calculateALT_arma(const arma::dmat& phi_frq){
 
 // Simulate the Wright-Fisher model using the logistic normal approximation
 // [[Rcpp::export]]
-arma::dcube simulateWFM_LogisticNorm_arma(const arma::dmat& location, const arma::dcube& squared_scale, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+arma::dcube simulateWFM_LogisticNorm_arma(const arma::dmat& location, const arma::dcube& scalesq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
   // simulate the haplotype frequency trajectories under the logistic normal approximation
   arma::dcube frq_pth = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen) + 1, sim_num);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat phi_frq = arma::mvnrnd(location.col(k), squared_scale.slice(k), sim_num);
+    arma::dmat phi_frq = arma::mvnrnd(location.col(k), scalesq.slice(k), sim_num);
     frq_pth.col(k) = calculateALT_arma(phi_frq);
   }
 
@@ -575,12 +546,12 @@ arma::dcube simulateWFM_LogisticNorm_arma(const arma::dmat& location, const arma
 
 // Approximate the first two moments of the logistic normal approximation of the Wright-Fisher model
 // [[Rcpp::export]]
-List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma::dcube& squared_scale, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma::dcube& scalesq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
   // simulate the haplotype frequency trajectories
-  arma::dcube frq_pth = simulateWFM_LogisticNorm_arma(location, squared_scale, int_gen, lst_gen, sim_num);
+  arma::dcube frq_pth = simulateWFM_LogisticNorm_arma(location, scalesq, int_gen, lst_gen, sim_num);
 
   // calculate the mean vector and variance matrix
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
