@@ -18,7 +18,7 @@ library("ggplot2")
 #install.packages("plot3D")
 library("plot3D")
 
-#' R functions
+#' call R functions
 source("./Code/Code v1.0/RFUN.R")
 
 ########################################
