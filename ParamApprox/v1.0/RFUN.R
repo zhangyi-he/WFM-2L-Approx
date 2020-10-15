@@ -90,28 +90,28 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-approximateMoment <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
+approximateMoment_WFM <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   fts_mat <- calculateFitnessMat_arma(sel_cof[1], dom_par[1], sel_cof[2], dom_par[2])
 
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
-    # Monte Carlo simulation
+    # use Monte Carlo simulations
     mnt <- approximateMoment_MonteCarlo_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, smp_siz)
   }
   if (mnt_apx == "Lacerda") {
-    # the extension of Lacerda & Seoighe (2014)
+    # use the extension of Lacerda & Seoighe (2014)
     mnt <- approximateMoment_Lacerda_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
   }
   if (mnt_apx == "Terhorst") {
-    # the extension of Terhorst et al. (2015)
+    # use the extension of Terhorst et al. (2015)
     mnt <- approximateMoment_Terhorst_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
   }
   if (mnt_apx == "Paris1") {
-    # the extension of Paris et al. (2019) with the first-order Taylor expansion
+    # use the extension of Paris et al. (2019) with the first-order Taylor expansion
     mnt <- approximateMoment_Paris1_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
   }
   if (mnt_apx == "Paris2") {
-    # the extension of Paris et al. (2019) with the second-order Taylor expansion
+    # use the extension of Paris et al. (2019) with the second-order Taylor expansion
     mnt <- approximateMoment_Paris2_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
   }
 
@@ -119,15 +119,11 @@ approximateMoment <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_g
               variance = as.array(mnt$variance)))
 }
 #' Compiled version
-cmpapproximateMoment <- cmpfun(approximateMoment)
+cmpapproximateMoment_WFM <- cmpfun(approximateMoment_WFM)
 
 ########################################
 
-
-
-
-
-#' Approximate the two-locus Wright-Fisher model with selection using the normal
+#' Generate the samples under the normal approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -136,53 +132,16 @@ cmpapproximateMoment <- cmpfun(approximateMoment)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-approximateWFM_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
+generateSample_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    mnt <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    param <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
   } else {
-    mnt <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
-  }
-
-  Moments_norm = approximatWFM_norm_arma(mnt$mean, mnt$variance)
-  mean_norm = Moments_norm$mean
-  var_norm = Moments_norm$variance
-
-  # return the parameters of the normal approximation and the corresponding first two moments
-  return(list(mean = mean_norm,
-              variance = var_norm))
-}
-#' Compiled version
-cmpapproximateWFM_Norm <- cmpfun(approximateWFM_Norm)
-
-
-
-
-
-########################################
-
-#' Simulate the two-locus Wright-Fisher model with selection through the normal approximation
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
-#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
-
-#' Standard version
-simulateWFM_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
-  if (mnt_apx == "MC") {
-    param <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
-  } else {
-    param <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+    param <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
   frq_pth <- simulateWFM_norm_arma(param$mean, param$variance, int_gen, lst_gen, sim_num)
   frq_pth <- as.array(frq_pth)
@@ -190,11 +149,11 @@ simulateWFM_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_ge
   return(frq_pth)
 }
 #' Compiled version
-cmpsimulateWFM_Norm <- cmpfun(simulateWFM_Norm)
+cmpgenerateSample_Norm <- cmpfun(generateSample_Norm)
 
 ########################################
 
-#' Approximate the two-locus Wright-Fisher model with selection using the logistic normal distribution
+#' Calculate the parameters for the logistic normal approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -207,23 +166,23 @@ cmpsimulateWFM_Norm <- cmpfun(simulateWFM_Norm)
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-approximateWFM_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
+calculateParam_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    mnt <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
   } else {
-    mnt <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  mnt = approximatWFM_LogisticNorm_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
+  param = calculateParam_LogisticNorm_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
 
   return(list(location = as.matrix(mnt$location),
               scalesq = as.array(mnt$scalesq)))
 }
 #' Compiled version
-cmpapproximateWFM_LogisticNorm <- cmpfun(approximateWFM_LogisticNorm)
+cmpcalculateParam_LogisticNorm <- cmpfun(calculateParam_LogisticNorm)
 
 ########################################
 
-#' Simulate the two-locus Wright-Fisher model with selection through the logistic normal approximation
+#' Generate the samples under the logistic normal approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -232,28 +191,28 @@ cmpapproximateWFM_LogisticNorm <- cmpfun(approximateWFM_LogisticNorm)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
+#' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-simulateWFM_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
+generateSample_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz) 
   } else {
-    param <- cmpapproximateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
   }
-  frq_pth = simulateWFM_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
+  frq_pth = generateSample_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
   frq_pth <- as.array(frq_pth)
 
   return(frq_pth)
 }
 #' Compiled version
-cmpsimulateWFM_LogisticNorm <- cmpfun(simulateWFM_LogisticNorm)
+cmpgenerateSample_LogisticNorm <- cmpfun(generateSample_LogisticNorm)
 
 ########################################
 
-#' Approximate the first two moments of the logistic normal approximation of the Wright-Fisher model
+#' Approximate the moments of the logistic normal approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -262,28 +221,28 @@ cmpsimulateWFM_LogisticNorm <- cmpfun(simulateWFM_LogisticNorm)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
+#' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-simulateWFM_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
+approximateMoment_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz) 
   } else {
-    param <- cmpapproximateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
   }
-  frq_pth = simulateWFM_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
-  frq_pth <- as.array(frq_pth)
+  mnt = approximateMoment_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
 
-  return(frq_pth)
+  return(list(mean = as.matrix(mnt$mean),
+              variance = as.array(mnt$variance)))
 }
 #' Compiled version
-cmpsimulateWFM_LogisticNorm <- cmpfun(simulateWFM_LogisticNorm)
+cmpapproximateMoment_LogisticNorm <- cmpfun(approximateMoment_LogisticNorm)
 
 ########################################
 
-#' Approximate the two-locus Wright-Fisher model with selection using the hierarchical beta distribution
+#' Calculate the parameters for the hierarchical beta approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -296,23 +255,23 @@ cmpsimulateWFM_LogisticNorm <- cmpfun(simulateWFM_LogisticNorm)
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-approximateWFM_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
+calculateParam_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    mnt <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
   } else {
-    mnt <- cmpapproximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  mnt = approximatWFM_HierarchicalBeta_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
+  param = calculateParam_HierarchicalBeta_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
 
-  return(list(alpha = as.matrix(mnt$alpha),
-              beta = as.matrix(mnt$beta)))
+  return(list(alpha = as.matrix(param$alpha),
+              beta = as.matrix(param$beta)))
 }
 #' Compiled version
-cmpapproximateWFM_HierarchicalBeta <- cmpfun(approximateWFM_HierarchicalBeta)
+cmpcalculateParam_HierarchicalBeta <- cmpfun(calculateParam_HierarchicalBeta)
 
 ########################################
 
-#' Simulate the two-locus Wright-Fisher model with selection through the hierarchical beta approximation
+#' Generate the samples under the hierarchical beta approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -321,28 +280,28 @@ cmpapproximateWFM_HierarchicalBeta <- cmpfun(approximateWFM_HierarchicalBeta)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
+#' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-simulateWFM_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
+generateSample_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
     param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
   } else {
     param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  frq_pth = simulateWFM_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen, sim_num)
+  frq_pth = generateSample_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen, sim_num)
   frq_pth <- as.array(frq_pth)
 
   return(frq_pth)
 }
 #' Compiled version
-cmpsimulateWFM_HierarchicalBeta <- cmpfun(simulateWFM_HierarchicalBeta)
+cmpgenerateSample_HierarchicalBeta <- cmpfun(generateSample_HierarchicalBeta)
 
 ########################################
 
-#' Approximate the first two moments of the hierarchical beta approximation of the Wright-Fisher model
+#' Approximate the moments of the hierarchical beta approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
 #' @param dom_par the dominance parameters at loci A and B
@@ -351,24 +310,23 @@ cmpsimulateWFM_HierarchicalBeta <- cmpfun(simulateWFM_HierarchicalBeta)
 #' @param int_frq the initial haplotype frequencies of the population
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
 #' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
 
 #' Standard version
-simulateWFM_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
+approximateMoment_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   if (mnt_apx == "MC") {
     param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
   } else {
     param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  frq_pth = simulateWFM_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen, sim_num)
-  frq_pth <- as.array(frq_pth)
+  mnt = approximateMoment_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen)
 
-  return(frq_pth)
+  return(list(mean = as.matrix(mnt$mean),
+              variance = as.array(mnt$variance)))
 }
 #' Compiled version
-cmpsimulateWFM_HierarchicalBeta <- cmpfun(simulateWFM_HierarchicalBeta)
+cmpapproximateMoment_HierarchicalBeta <- cmpfun(approximateMoment_HierarchicalBeta)
 
 ########################################
 
