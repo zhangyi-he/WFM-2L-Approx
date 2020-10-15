@@ -419,7 +419,7 @@ List approximateMoment_Paris2_arma(const arma::dmat& fts_mat, const double& rec_
 
 
 /****** ParamApprox ******/
-// Simulate the Wright-Fisher model using the normal approximation
+// Generate the samples under the normal approximation of the Wright-Fisher model
 // [[Rcpp::export]]
 arma::dcube simulateWFM_norm_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
@@ -472,7 +472,7 @@ arma::dcube calculateJacobianLocation_arma(const arma::dmat& hap_frq){
 
 // Approximate the Wright-Fisher model using the logistic normal distribution
 // [[Rcpp::export]]
-List approximatWFM_LogisticNorm_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen) {
+List calculateParam_LogisticNorm_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -489,7 +489,7 @@ List approximatWFM_LogisticNorm_arma(const arma::dmat& mean, const arma::dcube& 
                       Named("scalesq", scalesq));
 }
 
-// Calculate the additive logistic transformation
+// Calculate the parameters for the logistic normal approximation of the Wright-Fisher model
 // [[Rcpp::export]]
 arma::dmat calculateALT_arma(const arma::dmat& phi_frq){
   // ensure RNG gets set/reset
@@ -507,9 +507,9 @@ arma::dmat calculateALT_arma(const arma::dmat& phi_frq){
   return hap_frq;
 }
 
-// Simulate the Wright-Fisher model using the logistic normal approximation
+// Generate the samples under the logistic normal approximation of the Wright-Fisher model
 // [[Rcpp::export]]
-arma::dcube simulateWFM_LogisticNorm_arma(const arma::dmat& location, const arma::dcube& scalesq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+arma::dcube generateSample_LogisticNorm_arma(const arma::dmat& location, const arma::dcube& scalesq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -524,14 +524,14 @@ arma::dcube simulateWFM_LogisticNorm_arma(const arma::dmat& location, const arma
   return frq_pth;
 }
 
-// Approximate the first two moments of the logistic normal approximation of the Wright-Fisher model
+// Approximate the moments of the logistic normal approximation of the Wright-Fisher model
 // [[Rcpp::export]]
 List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma::dcube& scalesq, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
   // simulate the haplotype frequency trajectories
-  arma::dcube frq_pth = simulateWFM_LogisticNorm_arma(location, scalesq, int_gen, lst_gen, sim_num);
+  arma::dcube frq_pth = generateSample_LogisticNorm_arma(location, scalesq, int_gen, lst_gen, sim_num);
 
   // calculate the mean vector and variance matrix
   arma::dmat mean = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen));
@@ -547,9 +547,9 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
                       Named("variance", variance));
 }
 
-// Approximate the Wright-Fisher model using the hierarchical beta distribution
+// Calculate the parameters for the hierarchical beta approximation of the Wright-Fisher model
 // [[Rcpp::export]]
-List approximatWFM_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen) {
+List calculateParam_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -579,9 +579,9 @@ List approximatWFM_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcu
                       Named("beta", beta));
 }
 
-// Simulate the Wright-Fisher model using the hierarchical beta approximation
+// Generate the samples under the hierarchical beta approximation of the Wright-Fisher model
 // [[Rcpp::export]]
-arma::dcube simulateWFM_HierarchicalBeta_arma(const arma::dmat& alpha, const arma::dmat& beta, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+arma::dcube generateSample_HierarchicalBeta_arma(const arma::dmat& alpha, const arma::dmat& beta, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -603,7 +603,7 @@ arma::dcube simulateWFM_HierarchicalBeta_arma(const arma::dmat& alpha, const arm
   return frq_pth;
 }
 
-// Approximate the first two moments of the hierarchical beta approximation of the Wright-Fisher model
+// Approximate the moments of the hierarchical beta approximation of the Wright-Fisher model
 // [[Rcpp::export]]
 List approximateMoment_HierarchicalBeta_arma(const arma::dmat& alpha, const arma::dmat& beta, const int& int_gen, const int& lst_gen) {
   // ensure RNG gets set/reset
