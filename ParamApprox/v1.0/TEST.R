@@ -4,7 +4,7 @@
 #' version 1.0
 
 # set the directory
-setwd("~/Dropbox/Jeffery He/iResearch/Publications/2012/HE2020-WFM-2L-ParametricApprox-TheorPopulBiol")
+setwd("~/Dropbox/Jeffery He/iResearch/Publications/2017/HE2020-WFM-2L-ParamApprox-TheorPopulBiol")
 
 #install.packages("RColorBrewer")
 library("RColorBrewer")
