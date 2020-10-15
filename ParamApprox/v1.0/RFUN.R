@@ -5,11 +5,6 @@
 
 #' R functions
 
-#install.packages("mltools")
-library("mltools")
-#install.packages("data.table")
-library("data.table")
-
 #install.packages("inline")
 library("inline")
 #install.packages("Rcpp")
@@ -330,65 +325,31 @@ cmpapproximateMoment_HierarchicalBeta <- cmpfun(approximateMoment_HierarchicalBe
 
 ########################################
 
-
-
-
-
-#' Calculate the root mean square deviation between the empirical cumulative distribution functions for the Wright-Fisher model/diffusion
+#' Calculate the root mean square deviation between the two empirical cumulative distribution functions
 #' Parameter setting
-#' @param smp_WFM the sample trajectories generated under the Wright-Fisher model
-#' @param smp_WFD the sample trajectories generated under the Wright-Fisher diffusion
+#' @param smp_mod the sample trajectories generated under the Wright-Fisher model
+#' @param smp_apx the sample trajectories generated under the approximation of the Wright-Fisher model
 #' @param grd_num the grid number for the empirical probability distribution function
 #' @param rnd_grd = TRUE/FALSE (return the root mean square deviation between the empirical cumulative distribution functions with random grid points or not)
 
 #' Standard version
-calculateRMSD <- function(smp_WFM, smp_WFD, grd_num, rnd_grd = TRUE) {
+calculateRMSD <- function(smp_mod, smp_apx, int_gen, lst_gen, sim_num, grd_num, rnd_grd = TRUE) {
   if (rnd_grd == TRUE) {
-    #frq_grd <- generateRndGrid_2L_arma(grd_num)
-    #frq_grd <- t(frq_grd)
-    frq_grd <- generateRndGridUnif_2L_arma(grd_num)
+    frq_grd <- generateRndGrid_2L_arma(grd_num)
   } else {
     frq_grd <- generateFixGrid_2L_arma(grd_num)
-
   }
-  frq_grd <- data.table(frq_grd)
-  setnames(frq_grd, c("A1B1", "A1B2", "A2B1", "A2B2"))
 
-  dist <- rep(NA, length.out = dim(smp_WFM)[3])
-  for (k in 1:dim(smp_WFM)[3]) {
-    cdf_WFM <- empirical_cdf(data.table(A1B1 = smp_WFM[, 1, k], A1B2 = smp_WFM[, 2, k], A2B1 = smp_WFM[, 3, k], A2B2 = smp_WFM[, 4, k]), ubounds = frq_grd)
-    #cdf_WFM <- empirical_cdf(data.table(A1B1 = smp_WFM[, 1, k], A1B2 = smp_WFM[, 2, k], A2B1 = smp_WFM[, 3, k], A2B2 = smp_WFM[, 4, k]), ubounds = CJ(A1B1=1:3/3, A1B2=1:3/3, A2B1=1:3/3, A2B2=1:3/3))
-    print(cdf_WFM)
-    cdf_WFD <- empirical_cdf(data.table(A1B1 = smp_WFD[, 1, k], A1B2 = smp_WFD[, 2, k], A2B1 = smp_WFD[, 3, k], A2B2 = smp_WFD[, 4, k]), ubounds = frq_grd)
-    dist[k] <- sqrt(sum((cdf_WFM - cdf_WFD)^2) / dim(smp_WFM)[1])
+  dist <- rep(NA, length.out = dim(smp_mod)[3])
+  ECDF_mod = calculateECDF_2L_arma(smp_mod, int_gen, lst_gen, sim_num, frq_grd)
+  ECDF_apx = calculateECDF_2L_arma(smp_apx, int_gen, lst_gen, sim_num, frq_grd)
+  for (k in 1:dim(smp_mod)[3]) {
+    dist[k] <- sqrt(sum((ECDF_mod[, k] - ECDF_apx[, k])^2) / dim(smp_mod)[1])
   }
 
   return(dist)
 }
 #' Compiled version
 cmpcalculateRMSD <- cmpfun(calculateRMSD)
-
-#' Standard version
-calculateRMSD_2nd <- function(smp_WFM, smp_WFD, int_gen, lst_gen, sim_num, grd_num, rnd_grd = TRUE) {
-  if (rnd_grd == TRUE) {
-    frq_grd <- generateRndGrid_2L_arma(grd_num)
-    #frq_grd <- t(frq_grd)
-    #frq_grd <- generateRndGridUnif_2L_arma(grd_num)
-  } else {
-    frq_grd <- generateFixGrid_2L_arma(grd_num)
-
-  }
-
-  dist <- rep(NA, length.out = dim(smp_WFM)[3])
-  cdf_WFM = calculate_empirical_cdf_2L_arma(smp_WFM, int_gen, lst_gen, sim_num, frq_grd)
-  cdf_WFD = calculate_empirical_cdf_2L_arma(smp_WFD, int_gen, lst_gen, sim_num, frq_grd)
-  for (k in 1:dim(smp_WFM)[3]) {
-    dist[k] <- sqrt(sum((cdf_WFM[, k] - cdf_WFD[, k])^2) / dim(smp_WFM)[1])
-  }
-
-  return(dist)
-}
-#' Compiled version
-cmpcalculateRMSD_2nd <- cmpfun(calculateRMSD_2nd)
 
 ################################################################################
