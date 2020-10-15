@@ -693,9 +693,9 @@ arma::dmat calculateECDF_2L_arma(const arma::dcube& frq_pth, const arma::uword& 
   // ensure RNG gets set/reset
   RNGScope scope;
 
-  arma::dmat ECDF = arma::zeros<arma::dmat>(frq_grd.n_rows, frq_pth.n_cols - 1);
-  for(arma::uword k = 0; k < frq_pth.n_cols - 1; k++) {
-    arma::dmat frq_smp = frq_pth.col(k + 1);
+  arma::dmat ECDF = arma::zeros<arma::dmat>(frq_grd.n_rows, frq_pth.n_cols);
+  for(arma::uword k = 0; k < frq_pth.n_cols; k++) {
+    arma::dmat frq_smp = frq_pth.col(k);
     arma::dcolvec cdf = arma::zeros<arma::dcolvec>(frq_grd.n_rows);
 
     //
