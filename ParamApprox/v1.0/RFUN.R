@@ -82,7 +82,7 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 approximateMoment_WFM <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
@@ -91,7 +91,7 @@ approximateMoment_WFM <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, i
   # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # use Monte Carlo simulations
-    mnt <- approximateMoment_MonteCarlo_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, smp_siz)
+    mnt <- approximateMoment_MonteCarlo_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_num)
   }
   if (mnt_apx == "Lacerda") {
     # use the extension of Lacerda & Seoighe (2014)
@@ -129,12 +129,12 @@ cmpapproximateMoment_WFM <- cmpfun(approximateMoment_WFM)
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 generateSample_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    param <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
     param <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
@@ -158,12 +158,12 @@ cmpgenerateSample_Norm <- cmpfun(generateSample_Norm)
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 calculateParam_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
     mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
@@ -188,12 +188,12 @@ cmpcalculateParam_LogisticNorm <- cmpfun(calculateParam_LogisticNorm)
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 generateSample_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num) 
   } else {
     param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
   }
@@ -218,12 +218,12 @@ cmpgenerateSample_LogisticNorm <- cmpfun(generateSample_LogisticNorm)
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 approximateMoment_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num) 
   } else {
     param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
   }
@@ -247,12 +247,12 @@ cmpapproximateMoment_LogisticNorm <- cmpfun(approximateMoment_LogisticNorm)
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 calculateParam_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
     mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
@@ -277,12 +277,12 @@ cmpcalculateParam_HierarchicalBeta <- cmpfun(calculateParam_HierarchicalBeta)
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the Monte Carlo samples
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 generateSample_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
     param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
@@ -306,12 +306,12 @@ cmpgenerateSample_HierarchicalBeta <- cmpfun(generateSample_HierarchicalBeta)
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples for the first two moment approximations
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
 
 #' Standard version
 approximateMoment_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, smp_siz)
+    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
     param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
