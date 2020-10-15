@@ -313,8 +313,6 @@ List approximateMoment_Lacerda_arma(const arma::dmat& fts_mat, const double& rec
                       Named("variance", sigma.shed_slice(0)));
 }
 
-
-
 // Approximate the first two moments of the Wright-Fisher model using the extension of Terhorst et al. (2015)
 // [[Rcpp::export]]
 List approximateMoment_Terhorst_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
@@ -327,7 +325,7 @@ List approximateMoment_Terhorst_arma(const arma::dmat& fts_mat, const double& re
   arma::dmat mu = arma::zeros<arma::dmat>(4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube sigma = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
   arma::dcube epsilon_2ndOrder = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen) + 1);
-
+  
   // calculate the mean vector and variance matrix
   x.col(0) = int_frq;
   // epsilon.col(0) = arma::zeros<arma::dcolvec>(4);
@@ -335,7 +333,7 @@ List approximateMoment_Terhorst_arma(const arma::dmat& fts_mat, const double& re
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   // epsilon_2ndOrder.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat Jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
+    arma::dmat jacobian_mu = calculateJacobianMean_arma(x.col(k - 1), fts_mat, rec_rat);
     arma::dcube Hessian_mu = calculateHessianMean_arma(x.col(k - 1), fts_mat, rec_rat);
     arma::dcolvec SecndOrder_term = arma::zeros<arma::dcolvec>(4);
     arma::dmat epsilon_2ndOrder_k_minus_1 = epsilon_2ndOrder.slice(k - 1);
@@ -343,11 +341,11 @@ List approximateMoment_Terhorst_arma(const arma::dmat& fts_mat, const double& re
       arma::dmat Hessian_mu_i = Hessian_mu.row(i);
       SecndOrder_term(i) = 0.5 * arma::as_scalar(sum(sum(Hessian_mu_i % epsilon_2ndOrder_k_minus_1, 0), 1));
     }
-
+    
     x.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat);
-    epsilon.col(k) = Jacobian_mu * epsilon.col(k - 1) + SecndOrder_term;
-    mu.col(k) = x.col(k) + epsilon.col(k);
-    sigma.slice(k) = 1.0 / 2 / pop_siz * arma::diagmat(x.col(k) + Jacobian_mu * epsilon.col(k - 1)) - 1.0 / 2 / pop_siz * (x.col(k) * x.col(k).t() + Jacobian_mu * epsilon.col(k - 1) * x.col(k).t() + x.col(k) * (Jacobian_mu * epsilon.col(k - 1)).t() + Jacobian_mu * epsilon_2ndOrder_k_minus_1 * Jacobian_mu) + (1 - 1.0 / 2 / pop_siz) * Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
+    mu.col(k) = calculateMean_arma(x.col(k - 1), fts_mat, rec_rat) + jacobian_mu * epsilon.col(k - 1) + SecndOrder_term;
+    epsilon.col(k) = mu.col(k) - x.col(k);
+    sigma.slice(k) = 1.0 / 2 / pop_siz * arma::diagmat(mu.col(k)) - 1.0 / 2 / pop_siz * (calculateMean_arma(x.col(k - 1), fts_mat, rec_rat) + jacobian_mu * epsilon.col(k - 1)) * (calculateMean_arma(x.col(k - 1), fts_mat, rec_rat) + jacobian_mu * epsilon.col(k - 1)).t() + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
     epsilon_2ndOrder.slice(k) = sigma.slice(k) + epsilon.col(k) * epsilon.col(k).t();
   }
 
@@ -355,8 +353,6 @@ List approximateMoment_Terhorst_arma(const arma::dmat& fts_mat, const double& re
   return List::create(Named("mean", mu.shed_col(0)),
                       Named("variance", sigma.shed_slice(0)));
 }
-
-
 
 // Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019) with the first-order Taylor expansion
 // [[Rcpp::export]]
@@ -382,8 +378,6 @@ List approximateMoment_Paris1_arma(const arma::dmat& fts_mat, const double& rec_
                       Named("variance", sigma.shed_slice(0)));
 }
 
-
-
 // Approximate the first two moments of the Wright-Fisher model using the extension of Paris et al. (2019) with the second-order Taylor expansion
 // [[Rcpp::export]]
 List approximateMoment_Paris2_arma(const arma::dmat& fts_mat, const double& rec_rat, const int& pop_siz, const arma::dcolvec& int_frq, const int& int_gen, const int& lst_gen) {
@@ -398,17 +392,16 @@ List approximateMoment_Paris2_arma(const arma::dmat& fts_mat, const double& rec_
   mu.col(0) = int_frq;
   // sigma.slice(0) = arma::zeros<arma::dmat>(4, 4);
   for(arma::uword k = 1; k < arma::uword(lst_gen - int_gen) + 1; k++) {
-    arma::dmat Jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
-    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat);
+    arma::dmat jacobian_mu = calculateJacobianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     arma::dcube Hessian_mu = calculateHessianMean_arma(mu.col(k - 1), fts_mat, rec_rat);
     arma::dcolvec SecndOrder_term = arma::zeros<arma::dcolvec>(4);
     arma::dmat sigma_k_minus_1 = sigma.slice(k - 1);
     for(arma::uword i = 1; i < 4; i++) {
       arma::dmat Hessian_mu_i = Hessian_mu.row(i);
-
       SecndOrder_term(i) = 0.5 * arma::as_scalar(sum(sum(Hessian_mu_i % sigma_k_minus_1, 0), 1));
     }
-    sigma.slice(k) = (arma::diagmat(mu.col(k) + SecndOrder_term) - (mu.col(k) + SecndOrder_term) * (mu.col(k) + SecndOrder_term).t()) / 2 / pop_siz + (1 - 1.0 / 2 / pop_siz) * Jacobian_mu * sigma.slice(k - 1) * Jacobian_mu.t();
+    mu.col(k) = calculateMean_arma(mu.col(k - 1), fts_mat, rec_rat) + SecndOrder_term;
+    sigma.slice(k) = (1.0 / 2 / pop_siz) * (arma::diagmat(mu.col(k)) - mu.col(k) * (mu.col(k)).t()) + (1 - 1.0 / 2 / pop_siz) * jacobian_mu * sigma.slice(k - 1) * jacobian_mu.t();
   }
 
   // return the approximations for the mean vector and variance matrix of the Wright-Fisher model
