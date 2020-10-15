@@ -21,41 +21,296 @@ library("plot3D")
 #' call R functions
 source("./Code/Code v1.0/RFUN.R")
 
-########################################
+################################################################################
 
-#' Compare the simulation generated with the Wright-Fisher model and the Wright-Fisher diffusion
-sel_cof <- 5e-03
-dom_par <- 5e-01
+#' Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
 pop_siz <- 5e+03
-int_frq <- 2e-01
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+
+
+
+
+
+################################################################################
+
+#' Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
+#' @param dat_aug = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 ptn_num <- 5e+00
-sim_num <- 1e+06
 
-sim_frq_WFM <- numeric(sim_num)
-sim_frq_WFD <- numeric(sim_num)
-for (i in 1:sim_num) {
-  print(i)
-  sim_frq_WFM[i] <- cmpsimulateOLWFMS(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen)[(lst_gen - int_gen) + 1]
-  sim_frq_WFD[i] <- cmpsimulateOLWFDS(sel_cof, dom_par, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = FALSE)[(lst_gen - int_gen) + 1]
-}
 
-save(sel_cof, sel_cof, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, sim_frq_WFM, sim_frq_WFD,
-     file = "./Output/Output v2.1/Test v2.1/TEST_1L_WFM_vs_WFD.rda")
 
-load("./Output/Output v2.1/Test v2.1/TEST_1L_WFM_vs_WFD.rda")
 
-pdf(file = "./Output/Output v2.1/Test v2.1/TEST_1L_WFM_vs_WFD.pdf", width = 20, height = 10)
-par(mar = c(5.5, 5, 5.5, 2.5), cex.main = 2, cex.sub = 1.75, cex.axis = 1.75, cex.lab = 1.75)
-hist(sim_frq_WFM, breaks = seq(min(sim_frq_WFM, sim_frq_WFD), max(sim_frq_WFM, sim_frq_WFD), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM, sim_frq_WFD), max(sim_frq_WFM, sim_frq_WFD)),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Wright-Fisher diffusion"))
-hist(sim_frq_WFD, breaks = seq(min(sim_frq_WFM, sim_frq_WFD), max(sim_frq_WFM, sim_frq_WFD), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-dev.off()
 
 ################################################################################
+
+#' Approximate the first two moments of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+################################################################################
+
+#' Generate the samples under the normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+sim_num <- 1e+05
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+################################################################################
+
+#' Calculate the parameters for the logistic normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+########################################
+
+#' Generate the samples under the logistic normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+sim_num <- 1e+05
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+########################################
+
+#' Approximate the moments of the logistic normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+sim_num <- 1e+05
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+################################################################################
+
+#' Calculate the parameters for the hierarchical beta approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+########################################
+
+#' Generate the samples under the hierarchical beta approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+sim_num <- 1e+05
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+########################################
+
+#' Approximate the moments of the hierarchical beta approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-03
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+
+
+
+
+################################################################################
+
+
+
+
+
+
 
 #' Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
 #' Parameter setting
@@ -193,7 +448,7 @@ dev.off()
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples
+#' @param mnt_num the number of the Monte Carlo samples
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
@@ -203,7 +458,7 @@ int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 100
 sim_num <- 1e+05
-smp_siz <- 5e+00
+mnt_num <- 5e+00
 
 Moments_MC <- approximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, "MC", sim_num)
 mean_MC = Moments_MC$mean
@@ -500,7 +755,7 @@ lines(k, var_Paris2nd[4, 3,], type = "p", lwd = 1.5,
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples
+#' @param mnt_num the number of the Monte Carlo samples
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
@@ -510,20 +765,20 @@ int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 150
 sim_num <- 1e+04
-smp_siz <- 1e+04
+mnt_num <- 1e+04
 
 frq_pth = simulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
-frq_pth_MC = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", smp_siz)
-frq_pth_Lacerda = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", smp_siz)
-frq_pth_Terhorst = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", smp_siz)
-frq_pth_Paris = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", smp_siz)
+frq_pth_MC = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", mnt_num)
+frq_pth_Lacerda = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", mnt_num)
+frq_pth_Terhorst = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", mnt_num)
+frq_pth_Paris = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", mnt_num)
 
 ####################
-sim_frq_WFM <- matrix(NA, 4, smp_siz)
-sim_frq_MC <- matrix(NA, 4, smp_siz)
-sim_frq_Lacerda <- matrix(NA, 4, smp_siz)
-sim_frq_Terhorst <- matrix(NA, 4, smp_siz)
-sim_frq_Paris <- matrix(NA, 4, smp_siz)
+sim_frq_WFM <- matrix(NA, 4, mnt_num)
+sim_frq_MC <- matrix(NA, 4, mnt_num)
+sim_frq_Lacerda <- matrix(NA, 4, mnt_num)
+sim_frq_Terhorst <- matrix(NA, 4, mnt_num)
+sim_frq_Paris <- matrix(NA, 4, mnt_num)
 
 for (i in 1:sim_num) {
   print(i)
@@ -665,7 +920,7 @@ dev.off()
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples
+#' @param mnt_num the number of the Monte Carlo samples
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
@@ -675,20 +930,20 @@ int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 150
 sim_num <- 1e+04
-smp_siz <- 1e+04
+mnt_num <- 1e+04
 
 frq_pth = simulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
-frq_pth_MC = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", smp_siz)
-frq_pth_Lacerda = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", smp_siz)
-frq_pth_Terhorst = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", smp_siz)
-frq_pth_Paris = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", smp_siz)
+frq_pth_MC = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", mnt_num)
+frq_pth_Lacerda = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", mnt_num)
+frq_pth_Terhorst = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", mnt_num)
+frq_pth_Paris = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", mnt_num)
 
 ####################
-sim_frq_WFM <- matrix(NA, 4, smp_siz)
-sim_frq_MC <- matrix(NA, 4, smp_siz)
-sim_frq_Lacerda <- matrix(NA, 4, smp_siz)
-sim_frq_Terhorst <- matrix(NA, 4, smp_siz)
-sim_frq_Paris <- matrix(NA, 4, smp_siz)
+sim_frq_WFM <- matrix(NA, 4, mnt_num)
+sim_frq_MC <- matrix(NA, 4, mnt_num)
+sim_frq_Lacerda <- matrix(NA, 4, mnt_num)
+sim_frq_Terhorst <- matrix(NA, 4, mnt_num)
+sim_frq_Paris <- matrix(NA, 4, mnt_num)
 
 for (i in 1:sim_num) {
   print(i)
@@ -827,7 +1082,7 @@ dev.off()
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 #' @param sim_num the number of the samples in Monte Carlo simulation
 #' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param smp_siz the number of the Monte Carlo samples
+#' @param mnt_num the number of the Monte Carlo samples
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
@@ -837,19 +1092,19 @@ int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 200
 sim_num <- 1e+04
-smp_siz <- 1e+04
+mnt_num <- 1e+04
 
-frq_pth_MC = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", smp_siz)
-frq_pth_Lacerda = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", smp_siz)
-frq_pth_Terhorst = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", smp_siz)
-frq_pth_Paris = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", smp_siz)
+frq_pth_MC = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", mnt_num)
+frq_pth_Lacerda = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", mnt_num)
+frq_pth_Terhorst = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", mnt_num)
+frq_pth_Paris = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", mnt_num)
 
 ####################
-sim_frq_WFM <- matrix(NA, 4, smp_siz)
-sim_frq_MC <- matrix(NA, 4, smp_siz)
-sim_frq_Lacerda <- matrix(NA, 4, smp_siz)
-sim_frq_Terhorst <- matrix(NA, 4, smp_siz)
-sim_frq_Paris <- matrix(NA, 4, smp_siz)
+sim_frq_WFM <- matrix(NA, 4, mnt_num)
+sim_frq_MC <- matrix(NA, 4, mnt_num)
+sim_frq_Lacerda <- matrix(NA, 4, mnt_num)
+sim_frq_Terhorst <- matrix(NA, 4, mnt_num)
+sim_frq_Paris <- matrix(NA, 4, mnt_num)
 
 for (i in 1:sim_num) {
   print(i)
