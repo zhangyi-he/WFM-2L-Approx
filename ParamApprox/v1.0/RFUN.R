@@ -87,8 +87,6 @@ cmpsimulateDiffusApprox <- cmpfun(simulateDiffusApprox)
 #' Standard version
 approximateMoment_WFM <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   fts_mat <- calculateFitnessMat_arma(sel_cof[1], dom_par[1], sel_cof[2], dom_par[2])
-
-  # Approximate the first two moments of the Wright-Fisher model using
   if (mnt_apx == "MC") {
     # use Monte Carlo simulations
     mnt <- approximateMoment_MonteCarlo_arma(fts_mat, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_num)
@@ -118,6 +116,35 @@ cmpapproximateMoment_WFM <- cmpfun(approximateMoment_WFM)
 
 ########################################
 
+#' Calculate the parameters for the normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+#' Standard version
+calculateParam_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
+  if (mnt_apx == "MC") {
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+  } else {
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+  }
+  param <- calculateParam_Norm_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
+
+  return(list(mean = as.matrix(param$mean),
+              variance = as.array(param$variance)))
+}
+#' Compiled version
+cmpcalculateParam_Norm <- cmpfun(calculateParam_Norm)
+
+########################################
+
 #' Generate the samples under the normal approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
 #' @param sel_cof the selection coefficients at loci A and B
@@ -134,17 +161,47 @@ cmpapproximateMoment_WFM <- cmpfun(approximateMoment_WFM)
 #' Standard version
 generateSample_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+    param <- cmpcalculateParam_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
-    param <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+    param <- cmpcalculateParam_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  frq_pth <- simulateWFM_norm_arma(param$mean, param$variance, int_gen, lst_gen, sim_num)
+  frq_pth <- generateSample_Norm_arma(param$mean, param$variance, int_gen, lst_gen, sim_num)
   frq_pth <- as.array(frq_pth)
 
   return(frq_pth)
 }
 #' Compiled version
 cmpgenerateSample_Norm <- cmpfun(generateSample_Norm)
+
+########################################
+
+#' Approximate the moments of the normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+#' Standard version
+approximateMoment_Norm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
+  if (mnt_apx == "MC") {
+    param <- cmpcalculateParam_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+  } else {
+    param <- cmpcalculateParam_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+  }
+  mnt <- approximateMoment_Norm_arma(param$mean, param$variance, int_gen, lst_gen, sim_num)
+
+  return(list(mean = as.matrix(mnt$mean),
+              variance = as.array(mnt$variance)))
+}
+#' Compiled version
+cmpapproximateMoment_Norm <- cmpfun(approximateMoment_Norm)
 
 ########################################
 
@@ -167,10 +224,10 @@ calculateParam_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_
   } else {
     mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  param = calculateParam_LogisticNorm_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
+  param <- calculateParam_LogisticNorm_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
 
-  return(list(location = as.matrix(mnt$location),
-              scalesq = as.array(mnt$scalesq)))
+  return(list(location = as.matrix(param$location),
+              scalesq = as.array(param$scalesq)))
 }
 #' Compiled version
 cmpcalculateParam_LogisticNorm <- cmpfun(calculateParam_LogisticNorm)
@@ -193,11 +250,11 @@ cmpcalculateParam_LogisticNorm <- cmpfun(calculateParam_LogisticNorm)
 #' Standard version
 generateSample_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
-    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  frq_pth = generateSample_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
+  frq_pth <- generateSample_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
   frq_pth <- as.array(frq_pth)
 
   return(frq_pth)
@@ -223,11 +280,11 @@ cmpgenerateSample_LogisticNorm <- cmpfun(generateSample_LogisticNorm)
 #' Standard version
 approximateMoment_LogisticNorm <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
-    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx) 
+    param <- cmpcalculateParam_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  mnt = approximateMoment_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
+  mnt <- approximateMoment_LogisticNorm_arma(param$location, param$scalesq, int_gen, lst_gen, sim_num)
 
   return(list(mean = as.matrix(mnt$mean),
               variance = as.array(mnt$variance)))
@@ -256,7 +313,7 @@ calculateParam_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, 
   } else {
     mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  param = calculateParam_HierarchicalBeta_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
+  param <- calculateParam_HierarchicalBeta_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
 
   return(list(alpha = as.matrix(param$alpha),
               beta = as.matrix(param$beta)))
@@ -282,11 +339,11 @@ cmpcalculateParam_HierarchicalBeta <- cmpfun(calculateParam_HierarchicalBeta)
 #' Standard version
 generateSample_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+    param <- cmpcalculateParam_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
-    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+    param <- cmpcalculateParam_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  frq_pth = generateSample_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen, sim_num)
+  frq_pth <- generateSample_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen, sim_num)
   frq_pth <- as.array(frq_pth)
 
   return(frq_pth)
@@ -311,11 +368,11 @@ cmpgenerateSample_HierarchicalBeta <- cmpfun(generateSample_HierarchicalBeta)
 #' Standard version
 approximateMoment_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
   if (mnt_apx == "MC") {
-    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+    param <- cmpcalculateParam_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
   } else {
-    param <- cmpapproximateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+    param <- cmpcalculateParam_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  mnt = approximateMoment_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen)
+  mnt <- approximateMoment_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen)
 
   return(list(mean = as.matrix(mnt$mean),
               variance = as.array(mnt$variance)))
@@ -333,7 +390,7 @@ cmpapproximateMoment_HierarchicalBeta <- cmpfun(approximateMoment_HierarchicalBe
 #' @param rnd_grd = TRUE/FALSE (return the root mean square deviation between the empirical cumulative distribution functions with random grid points or not)
 
 #' Standard version
-calculateRMSD <- function(smp_mod, smp_apx, int_gen, lst_gen, sim_num, grd_num, rnd_grd = TRUE) {
+calculateRMSD <- function(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE) {
   if (rnd_grd == TRUE) {
     frq_grd <- generateRndGrid_2L_arma(grd_num)
   } else {
@@ -341,8 +398,8 @@ calculateRMSD <- function(smp_mod, smp_apx, int_gen, lst_gen, sim_num, grd_num, 
   }
 
   dist <- rep(NA, length.out = dim(smp_mod)[3])
-  ECDF_mod = calculateECDF_2L_arma(smp_mod, int_gen, lst_gen, sim_num, frq_grd)
-  ECDF_apx = calculateECDF_2L_arma(smp_apx, int_gen, lst_gen, sim_num, frq_grd)
+  ECDF_mod <- calculateECDF_2L_arma(smp_mod, sim_num, frq_grd)
+  ECDF_apx <- calculateECDF_2L_arma(smp_apx, sim_num, frq_grd)
   for (k in 1:dim(smp_mod)[3]) {
     dist[k] <- sqrt(sum((ECDF_mod[, k] - ECDF_apx[, k])^2) / dim(smp_mod)[1])
   }
