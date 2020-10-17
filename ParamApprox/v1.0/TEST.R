@@ -33,17 +33,29 @@ source("./Code/Code v1.0/RFUN.R")
 #' @param int_gen the first generation of the simulated haplotype frequency trajectories
 #' @param lst_gen the last generation of the simulated haplotype frequency trajectories
 
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 500
-
-
-
-
+# sel_cof <- c(1e-02, 5e-03)
+# dom_par <- c(5e-01, 5e-01)
+# rec_rat <- 1e-05
+# pop_siz <- 5e+03
+# int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+# int_gen <- 0
+# lst_gen <- 500
+#
+# frq_pth <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
+#
+# k <- int_gen:lst_gen
+# plot(k, frq_pth[1, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFM: the A1B1 haplotype frequency trajectory")
+# plot(k, frq_pth[2, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFM: the A1B2 haplotype frequency trajectory")
+# plot(k, frq_pth[3, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFM: the A2B1 haplotype frequency trajectory")
+# plot(k, frq_pth[4, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFM: the A2B2 haplotype frequency trajectory")
 
 ################################################################################
 
@@ -61,16 +73,74 @@ lst_gen <- 500
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 ptn_num <- 5e+00
 
+# frq_pth <- cmpsimulateDiffusApprox(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = TRUE)
+#
+# t <- (int_gen:(int_gen + (lst_gen - int_gen) * ptn_num)) / 2 / pop_siz
+# plot(t, frq_pth[1, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFD: the A1B1 haplotype frequency trajectory")
+# plot(t, frq_pth[2, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFD: the A1B2 haplotype frequency trajectory")
+# plot(t, frq_pth[3, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFD: the A2B1 haplotype frequency trajectory")
+# plot(t, frq_pth[4, ], type = "l", lwd = 1.5,
+#      xlab = "Generation", ylab = "Haplotype frequency",
+#      main = "WFD: the A2B2 haplotype frequency trajectory")
 
+sim_num <- 1e+05
+smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+smp_apx <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+for (i in 1:sim_num) {
+  print(i)
+  smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+  smp_apx[, , i] <- cmpsimulateDiffusApprox(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = FALSE)[, 2:(lst_gen - int_gen + 1)]
+}
 
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, smp_mod, smp_apx,
+     file = "./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
 
+load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
+
+gen <- 100
+smp_mod <- smp_mod[, gen, ]
+smp_apx <- smp_apx[, gen, ]
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_Diffus.pdf", width = 16, height = 12)
+par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+hist_mod <- hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B1 haplotype at generation", gen))
+hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B2 haplotype at generation", gen))
+hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B1 haplotype at generation", gen))
+hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B2 haplotype at generation", gen))
+hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+dev.off()
 
 ################################################################################
 
@@ -88,9 +158,137 @@ ptn_num <- 5e+00
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_gen <- 0
+lst_gen <- 500
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+mean <- array(NA, dim = c(5, 4, lst_gen - int_gen))
+variance <- array(NA, dim = c(5, 4, lst_gen - int_gen))
+covariance <- array(NA, dim = c(5, 6, lst_gen - int_gen))
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[1], mnt_num))
+mean[1, , ] <- mnt$mean
+variance[1, 1, ] <- mnt$variance[1, 1, ]
+variance[1, 2, ] <- mnt$variance[2, 2, ]
+variance[1, 3, ] <- mnt$variance[3, 3, ]
+variance[1, 4, ] <- mnt$variance[4, 4, ]
+covariance[1, 1, ] <- mnt$variance[1, 2, ]
+covariance[1, 2, ] <- mnt$variance[1, 3, ]
+covariance[1, 3, ] <- mnt$variance[2, 3, ]
+covariance[1, 4, ] <- mnt$variance[1, 4, ]
+covariance[1, 5, ] <- mnt$variance[2, 4, ]
+covariance[1, 6, ] <- mnt$variance[3, 4, ]
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[2]))
+mean[2, , ] <- mnt$mean
+variance[2, 1, ] <- mnt$variance[1, 1, ]
+variance[2, 2, ] <- mnt$variance[2, 2, ]
+variance[2, 3, ] <- mnt$variance[3, 3, ]
+variance[2, 4, ] <- mnt$variance[4, 4, ]
+covariance[2, 1, ] <- mnt$variance[1, 2, ]
+covariance[2, 2, ] <- mnt$variance[1, 3, ]
+covariance[2, 3, ] <- mnt$variance[2, 3, ]
+covariance[2, 4, ] <- mnt$variance[1, 4, ]
+covariance[2, 5, ] <- mnt$variance[2, 4, ]
+covariance[2, 6, ] <- mnt$variance[3, 4, ]
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[3]))
+mean[3, , ] <- mnt$mean
+variance[3, 1, ] <- mnt$variance[1, 1, ]
+variance[3, 2, ] <- mnt$variance[2, 2, ]
+variance[3, 3, ] <- mnt$variance[3, 3, ]
+variance[3, 4, ] <- mnt$variance[4, 4, ]
+covariance[3, 1, ] <- mnt$variance[1, 2, ]
+covariance[3, 2, ] <- mnt$variance[1, 3, ]
+covariance[3, 3, ] <- mnt$variance[2, 3, ]
+covariance[3, 4, ] <- mnt$variance[1, 4, ]
+covariance[3, 5, ] <- mnt$variance[2, 4, ]
+covariance[3, 6, ] <- mnt$variance[3, 4, ]
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[4]))
+mean[4, , ] <- mnt$mean
+variance[4, 1, ] <- mnt$variance[1, 1, ]
+variance[4, 2, ] <- mnt$variance[2, 2, ]
+variance[4, 3, ] <- mnt$variance[3, 3, ]
+variance[4, 4, ] <- mnt$variance[4, 4, ]
+covariance[4, 1, ] <- mnt$variance[1, 2, ]
+covariance[4, 2, ] <- mnt$variance[1, 3, ]
+covariance[4, 3, ] <- mnt$variance[2, 3, ]
+covariance[4, 4, ] <- mnt$variance[1, 4, ]
+covariance[4, 5, ] <- mnt$variance[2, 4, ]
+covariance[4, 6, ] <- mnt$variance[3, 4, ]
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[5]))
+mean[5, , ] <- mnt$mean
+variance[5, 1, ] <- mnt$variance[1, 1, ]
+variance[5, 2, ] <- mnt$variance[2, 2, ]
+variance[5, 3, ] <- mnt$variance[3, 3, ]
+variance[5, 4, ] <- mnt$variance[4, 4, ]
+covariance[5, 1, ] <- mnt$variance[1, 2, ]
+covariance[5, 2, ] <- mnt$variance[1, 3, ]
+covariance[5, 3, ] <- mnt$variance[2, 3, ]
+covariance[5, 4, ] <- mnt$variance[1, 4, ]
+covariance[5, 5, ] <- mnt$variance[2, 4, ]
+covariance[5, 6, ] <- mnt$variance[3, 4, ]
+
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
+     file = "./Output/Output v1.0/Test v1.0/TEST_MomentApprox.rda")
+
+load("./Output/Output v1.0/Test v1.0/TEST_MomentApprox.rda")
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_MomentApprox.pdf", width = 8, height = 18)
+par(mfrow = c(3, 1), oma = c(0, 0, 3, 0), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+k <- (int_gen + 1):lst_gen
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(mean), max(mean)),
+     xlab = "Generation", ylab = "Mean",
+     main = "Moment approximation of the Wright-Fisher model: mean")
+for (i in 1:5) {
+  for (j in 1:4) {
+    lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
+     xlab = "Generation", ylab = "Variance",
+     main = "Moment approximation of the Wright-Fisher model: variance")
+for (i in 1:5) {
+  for (j in 1:4) {
+    lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
+     xlab = "Generation", ylab = "Covariance",
+     main = "Moment approximation of the Wright-Fisher model: covariance")
+for (i in 1:5) {
+  for (j in 1:6) {
+    lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+dev.off()
+
+################################################################################
+
+#' Calculate the parameters for the normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-05
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -100,7 +298,7 @@ mnt_num <- 1e+05
 
 
 
-################################################################################
+########################################
 
 #' Generate the samples under the normal approximation of the two-locus Wright-Fisher model with selection
 #' Parameter setting
@@ -117,18 +315,155 @@ mnt_num <- 1e+05
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
 mnt_num <- 1e+05
 
+system.time(smp_apx <- cmpgenerateSample_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
 
+# smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+# for (i in 1:sim_num) {
+#   print(i)
+#   smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+# }
 
+load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
 
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
+     file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.rda")
+
+load("./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.rda")
+
+gen <- 100
+smp_mod <- smp_mod[, gen, ]
+smp_apx <- smp_apx[, gen, ]
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.pdf", width = 16, height = 12)
+par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+hist_mod <- hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B1 haplotype at generation", gen))
+hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B2 haplotype at generation", gen))
+hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B1 haplotype at generation", gen))
+hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B2 haplotype at generation", gen))
+hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+dev.off()
+
+########################################
+
+#' Approximate the moments of the normal approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-05
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_gen <- 0
+lst_gen <- 500
+sim_num <- 1e+05
+mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
+mnt_num <- 1e+05
+
+mean <- array(NA, dim = c(2, 4, lst_gen - int_gen))
+variance <- array(NA, dim = c(2, 4, lst_gen - int_gen))
+covariance <- array(NA, dim = c(2, 6, lst_gen - int_gen))
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[1], mnt_num))
+mean[1, , ] <- mnt$mean
+variance[1, 1, ] <- mnt$variance[1, 1, ]
+variance[1, 2, ] <- mnt$variance[2, 2, ]
+variance[1, 3, ] <- mnt$variance[3, 3, ]
+variance[1, 4, ] <- mnt$variance[4, 4, ]
+covariance[1, 1, ] <- mnt$variance[1, 2, ]
+covariance[1, 2, ] <- mnt$variance[1, 3, ]
+covariance[1, 3, ] <- mnt$variance[2, 3, ]
+covariance[1, 4, ] <- mnt$variance[1, 4, ]
+covariance[1, 5, ] <- mnt$variance[2, 4, ]
+covariance[1, 6, ] <- mnt$variance[3, 4, ]
+system.time(mnt <- cmpapproximateMoment_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
+mean[2, , ] <- mnt$mean
+variance[2, 1, ] <- mnt$variance[1, 1, ]
+variance[2, 2, ] <- mnt$variance[2, 2, ]
+variance[2, 3, ] <- mnt$variance[3, 3, ]
+variance[2, 4, ] <- mnt$variance[4, 4, ]
+covariance[2, 1, ] <- mnt$variance[1, 2, ]
+covariance[2, 2, ] <- mnt$variance[1, 3, ]
+covariance[2, 3, ] <- mnt$variance[2, 3, ]
+covariance[2, 4, ] <- mnt$variance[1, 4, ]
+covariance[2, 5, ] <- mnt$variance[2, 4, ]
+covariance[2, 6, ] <- mnt$variance[3, 4, ]
+
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
+     file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Moment.rda")
+
+load("./Output/Output v1.0/Test v1.0/TEST_Norm_Moment.rda")
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Moment.pdf", width = 8, height = 18)
+par(mfrow = c(3, 1), oma = c(0, 0, 3, 0), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+k <- (int_gen + 1):lst_gen
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(mean), max(mean)),
+     xlab = "Generation", ylab = "Mean",
+     main = "Moment approximation of the normal approximation: mean")
+for (i in 1:2) {
+  for (j in 1:4) {
+    lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
+     xlab = "Generation", ylab = "Variance",
+     main = "Moment approximation of the normal approximation: variance")
+for (i in 1:2) {
+  for (j in 1:4) {
+    lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
+     xlab = "Generation", ylab = "Covariance",
+     main = "Moment approximation of the normal approximation: covariance")
+for (i in 1:2) {
+  for (j in 1:6) {
+    lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+dev.off()
 
 ################################################################################
 
@@ -146,9 +481,9 @@ mnt_num <- 1e+05
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -175,18 +510,61 @@ mnt_num <- 1e+05
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
 mnt_num <- 1e+05
 
+system.time(smp_apx <- generateSample_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
 
+# smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+# for (i in 1:sim_num) {
+#   print(i)
+#   smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+# }
 
+load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
 
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
+     file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.rda")
+
+load("./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.rda")
+
+gen <- 100
+smp_mod <- smp_mod[, gen, ]
+smp_apx <- smp_apx[, gen, ]
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.pdf", width = 16, height = 12)
+par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+hist_mod <- hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B1 haplotype at generation", gen))
+hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B2 haplotype at generation", gen))
+hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B1 haplotype at generation", gen))
+hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B2 haplotype at generation", gen))
+hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+dev.off()
 
 ########################################
 
@@ -205,18 +583,82 @@ mnt_num <- 1e+05
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
 mnt_num <- 1e+05
 
+mean <- array(NA, dim = c(2, 4, lst_gen - int_gen))
+variance <- array(NA, dim = c(2, 4, lst_gen - int_gen))
+covariance <- array(NA, dim = c(2, 6, lst_gen - int_gen))
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[1], mnt_num))
+mean[1, , ] <- mnt$mean
+variance[1, 1, ] <- mnt$variance[1, 1, ]
+variance[1, 2, ] <- mnt$variance[2, 2, ]
+variance[1, 3, ] <- mnt$variance[3, 3, ]
+variance[1, 4, ] <- mnt$variance[4, 4, ]
+covariance[1, 1, ] <- mnt$variance[1, 2, ]
+covariance[1, 2, ] <- mnt$variance[1, 3, ]
+covariance[1, 3, ] <- mnt$variance[2, 3, ]
+covariance[1, 4, ] <- mnt$variance[1, 4, ]
+covariance[1, 5, ] <- mnt$variance[2, 4, ]
+covariance[1, 6, ] <- mnt$variance[3, 4, ]
+system.time(mnt <- cmpapproximateMoment_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
+mean[2, , ] <- mnt$mean
+variance[2, 1, ] <- mnt$variance[1, 1, ]
+variance[2, 2, ] <- mnt$variance[2, 2, ]
+variance[2, 3, ] <- mnt$variance[3, 3, ]
+variance[2, 4, ] <- mnt$variance[4, 4, ]
+covariance[2, 1, ] <- mnt$variance[1, 2, ]
+covariance[2, 2, ] <- mnt$variance[1, 3, ]
+covariance[2, 3, ] <- mnt$variance[2, 3, ]
+covariance[2, 4, ] <- mnt$variance[1, 4, ]
+covariance[2, 5, ] <- mnt$variance[2, 4, ]
+covariance[2, 6, ] <- mnt$variance[3, 4, ]
 
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
+     file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Moment.rda")
 
+load("./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Moment.rda")
 
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Moment.pdf", width = 8, height = 18)
+par(mfrow = c(3, 1), oma = c(0, 0, 3, 0), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+k <- (int_gen + 1):lst_gen
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(mean), max(mean)),
+     xlab = "Generation", ylab = "Mean",
+     main = "Moment approximation of the logistic normal approximation: mean")
+for (i in 1:2) {
+  for (j in 1:4) {
+    lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
+     xlab = "Generation", ylab = "Variance",
+     main = "Moment approximation of the logistic normal approximation: variance")
+for (i in 1:2) {
+  for (j in 1:4) {
+    lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
+     xlab = "Generation", ylab = "Covariance",
+     main = "Moment approximation of the logistic normal approximation: covariance")
+for (i in 1:2) {
+  for (j in 1:6) {
+    lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+dev.off()
 
 ################################################################################
 
@@ -234,9 +676,9 @@ mnt_num <- 1e+05
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -263,18 +705,61 @@ mnt_num <- 1e+05
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
 mnt_num <- 1e+05
 
+system.time(smp_apx <- cmpgenerateSample_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
 
+# smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+# for (i in 1:sim_num) {
+#   print(i)
+#   smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+# }
 
+load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
 
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
+     file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Approx.rda")
+
+load("./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Approx.rda")
+
+gen <- 100
+smp_mod <- smp_mod[, gen, ]
+smp_apx <- smp_apx[, gen, ]
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Approx.pdf", width = 16, height = 12)
+par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+hist_mod <- hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B1 haplotype at generation", gen))
+hist(smp_apx[1, ], breaks = seq(min(smp_mod[1, ], smp_apx[1, ]), max(smp_mod[1, ], smp_apx[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A1B2 haplotype at generation", gen))
+hist(smp_apx[2, ], breaks = seq(min(smp_mod[2, ], smp_apx[2, ]), max(smp_mod[2, ], smp_apx[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B1 haplotype at generation", gen))
+hist(smp_apx[3, ], breaks = seq(min(smp_mod[3, ], smp_apx[3, ]), max(smp_mod[3, ], smp_apx[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+hist_mod <- hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist_apx <- hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), plot = FALSE)
+hist(smp_mod[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
+     xlim = c(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ])), ylim = c(0, max(hist_mod$density, hist_apx$density)),
+     xlab = "Haplotype frequency", main = paste("Histogram of the A2B2 haplotype at generation", gen))
+hist(smp_apx[4, ], breaks = seq(min(smp_mod[4, ], smp_apx[4, ]), max(smp_mod[4, ], smp_apx[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
+dev.off()
 
 ########################################
 
@@ -292,964 +777,93 @@ mnt_num <- 1e+05
 
 sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
+rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
 mnt_num <- 1e+05
 
+mean <- array(NA, dim = c(2, 4, lst_gen - int_gen))
+variance <- array(NA, dim = c(2, 4, lst_gen - int_gen))
+covariance <- array(NA, dim = c(2, 6, lst_gen - int_gen))
+system.time(mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[1], mnt_num))
+mean[1, , ] <- mnt$mean
+variance[1, 1, ] <- mnt$variance[1, 1, ]
+variance[1, 2, ] <- mnt$variance[2, 2, ]
+variance[1, 3, ] <- mnt$variance[3, 3, ]
+variance[1, 4, ] <- mnt$variance[4, 4, ]
+covariance[1, 1, ] <- mnt$variance[1, 2, ]
+covariance[1, 2, ] <- mnt$variance[1, 3, ]
+covariance[1, 3, ] <- mnt$variance[2, 3, ]
+covariance[1, 4, ] <- mnt$variance[1, 4, ]
+covariance[1, 5, ] <- mnt$variance[2, 4, ]
+covariance[1, 6, ] <- mnt$variance[3, 4, ]
+system.time(mnt <- cmpapproximateMoment_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx[1], mnt_num))
+mean[2, , ] <- mnt$mean
+variance[2, 1, ] <- mnt$variance[1, 1, ]
+variance[2, 2, ] <- mnt$variance[2, 2, ]
+variance[2, 3, ] <- mnt$variance[3, 3, ]
+variance[2, 4, ] <- mnt$variance[4, 4, ]
+covariance[2, 1, ] <- mnt$variance[1, 2, ]
+covariance[2, 2, ] <- mnt$variance[1, 3, ]
+covariance[2, 3, ] <- mnt$variance[2, 3, ]
+covariance[2, 4, ] <- mnt$variance[1, 4, ]
+covariance[2, 5, ] <- mnt$variance[2, 4, ]
+covariance[2, 6, ] <- mnt$variance[3, 4, ]
+
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
+     file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Moment.rda")
+
+load("./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Moment.rda")
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Moment.pdf", width = 8, height = 18)
+par(mfrow = c(3, 1), oma = c(0, 0, 3, 0), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+k <- (int_gen + 1):lst_gen
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(mean), max(mean)),
+     xlab = "Generation", ylab = "Mean",
+     main = "Moment approximation of the hierarchical beta approximation: mean")
+for (i in 1:2) {
+  for (j in 1:4) {
+    lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
+     xlab = "Generation", ylab = "Variance",
+     main = "Moment approximation of the hierarchical beta approximation: variance")
+for (i in 1:2) {
+  for (j in 1:4) {
+    lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
+     xlab = "Generation", ylab = "Covariance",
+     main = "Moment approximation of the hierarchical beta approximation: covariance")
+for (i in 1:2) {
+  for (j in 1:6) {
+    lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
+  }
+}
+legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+dev.off()
+
+################################################################################
+
+#' Calculate the root mean square deviation between the two empirical cumulative distribution functions
+#' Parameter setting
+#' @param smp_mod the sample trajectories generated under the Wright-Fisher model
+#' @param smp_apx the sample trajectories generated under the approximation of the Wright-Fisher model
+#' @param grd_num the grid number for the empirical probability distribution function
+#' @param rnd_grd = TRUE/FALSE (return the root mean square deviation between the empirical cumulative distribution functions with random grid points or not)
+
 
 
 
 
 ################################################################################
-
-
-
-
-
-
-
-#' Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher model with selection
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 500
-
-frq_pth <- cmpsimulateTLWFMS(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
-
-k <- int_gen:lst_gen
-plot(k, frq_pth[1, ], type = "l", lwd = 1.5,
-     xlab = "Generation", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A1B1 haplotype generated with the Wright-Fisher model")
-plot(k, frq_pth[2, ], type = "l", lwd = 1.5,
-     xlab = "Generation", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A1B2 haplotype generated with the Wright-Fisher model")
-plot(k, frq_pth[3, ], type = "l", lwd = 1.5,
-     xlab = "Generation", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A2B1 haplotype generated with the Wright-Fisher model")
-plot(k, frq_pth[4, ], type = "l", lwd = 1.5,
-     xlab = "Generation", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A2B2 haplotype generated with the Wright-Fisher model")
-
-########################################
-
-#' Simulate the haplotype frequency trajectories according to the two-locus Wright-Fisher diffusion with selection using the Euler-Maruyama method
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param ptn_num the number of subintervals divided per generation in the Euler-Maruyama method
-#' @param data_augmentation = TRUE/FALSE (return the simulated sample trajectory with data augmentation or not)
-
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 500
-ptn_num <- 5e+00
-
-frq_pth <- cmpsimulateTLWFDS(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, data_augmentation = TRUE)
-
-t <- (int_gen:(int_gen + (lst_gen - int_gen) * ptn_num)) / 2 / pop_siz
-plot(t, frq_pth[1, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A1B1 haplotype generated with the Wright-Fisher diffusion")
-plot(t, frq_pth[2, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A1B2 haplotype generated with the Wright-Fisher diffusion")
-plot(t, frq_pth[3, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A2B1 haplotype generated with the Wright-Fisher diffusion")
-plot(t, frq_pth[4, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency",
-     main = "A frequency trajectory of the A2B2 haplotype generated with the Wright-Fisher diffusion")
-
-########################################
-
-#' Compare the simulation generated with the Wright-Fisher model and the Wright-Fisher diffusion
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+02
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 50
-ptn_num <- 5e+00
-sim_num <- 1e+04
-
-sim_frq_WFM <- matrix(NA, nrow = 4, ncol = sim_num)
-sim_frq_WFD <- matrix(NA, nrow = 4, ncol = sim_num)
-for (i in 1:sim_num) {
-  print(i)
-  sim_frq_WFM[, i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, (lst_gen - int_gen) + 1]
-  sim_frq_WFD[, i] <- cmpsimulateDiffusApprox(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = FALSE)[, (lst_gen - int_gen) + 1]
-}
-
-save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, sim_frq_WFM, sim_frq_WFD,
-     file = "./Output/Output v2.1/Test v2.1/TEST_2L_WFM_vs_WFD.rda")
-
-load("./Output/Output v2.1/Test v2.1/TEST_2L_WFM_vs_WFD.rda")
-
-pdf(file = "./Desktop/TEST_2L_WFM_vs_WFD.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_WFD[1, ]), max(sim_frq_WFM[1, ], sim_frq_WFD[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_WFD[1, ]), max(sim_frq_WFM[1, ], sim_frq_WFD[1, ])),
-     xlab = "Haplotype frequency", main = "Haplotype A1B1")
-hist(sim_frq_WFD[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_WFD[1, ]), max(sim_frq_WFM[1, ], sim_frq_WFD[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_WFD[2, ]), max(sim_frq_WFM[2, ], sim_frq_WFD[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_WFD[2, ]), max(sim_frq_WFM[2, ], sim_frq_WFD[2, ])),
-     xlab = "Haplotype frequency", main = "Haplotype A1B2")
-hist(sim_frq_WFD[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_WFD[2, ]), max(sim_frq_WFM[2, ], sim_frq_WFD[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_WFD[3, ]), max(sim_frq_WFM[3, ], sim_frq_WFD[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_WFD[3, ]), max(sim_frq_WFM[3, ], sim_frq_WFD[3, ])),
-     xlab = "Haplotype frequency", main = "Haplotype A2B1")
-hist(sim_frq_WFD[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_WFD[3, ]), max(sim_frq_WFM[3, ], sim_frq_WFD[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_WFD[4, ]), max(sim_frq_WFM[4, ], sim_frq_WFD[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_WFD[4, ]), max(sim_frq_WFM[4, ], sim_frq_WFD[4, ])),
-     xlab = "Haplotype frequency", main = "Haplotype A2B2")
-hist(sim_frq_WFD[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_WFD[4, ]), max(sim_frq_WFM[4, ], sim_frq_WFD[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-title(paste("Histograms of the haplotype frequencies in generation", lst_gen, "under the Wright-Fisher model and the Wright-Fisher diffusion"), outer = TRUE)
-dev.off()
-
-################################################################################
-
-#' Compare the moments of the Wright-Fisher model using different methods
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
-#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param mnt_num the number of the Monte Carlo samples
-
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 100
-sim_num <- 1e+05
-mnt_num <- 5e+00
-
-Moments_MC <- approximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, "MC", sim_num)
-mean_MC = Moments_MC$mean
-var_MC = Moments_MC$variance
-Moments_Lacerda <- approximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, "Lacerda", sim_num)
-mean_Lacerda = Moments_Lacerda$mean
-var_Lacerda = Moments_Lacerda$variance
-Moments_Terhorst <- approximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, "Terhorst", sim_num)
-mean_Terhorst = Moments_Terhorst$mean
-var_Terhorst = Moments_Terhorst$variance
-Moments_Paris <- approximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, "Paris", sim_num)
-mean_Paris = Moments_Paris$mean
-var_Paris = Moments_Paris$variance
-Moments_Terhorst2nd <- approximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, "Terhorst2nd", sim_num)
-mean_Terhorst2nd = Moments_Terhorst2nd$mean
-var_Terhorst2nd = Moments_Terhorst2nd$variance
-Moments_Paris2nd <- approximateMoment(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, "Paris2nd", sim_num)
-mean_Paris2nd = Moments_Paris2nd$mean
-var_Paris2nd = Moments_Paris2nd$variance
-#################### mean
-k <- int_gen:lst_gen
-plot(k, mean_MC[1, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(0, 1),
-     main = "")
-lines(k, mean_Lacerda[1, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(0, 1),
-     main = "")
-lines(k, mean_Terhorst[1, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, 1),
-     main = "")
-lines(k, mean_Paris[1, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Terhorst2nd[1, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Paris2nd[1, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, 1),
-      main = "")
-
-lines(k, mean_MC[2, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Lacerda[2, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Terhorst[2, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Paris[2, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Terhorst2nd[2, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Paris2nd[2, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, 1),
-      main = "")
-
-lines(k, mean_MC[3, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(0, 1),
-     main = "")
-lines(k, mean_Lacerda[3, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Terhorst[3, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Paris[3, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Terhorst2nd[3, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Paris2nd[3, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, 1),
-      main = "")
-
-lines(k, mean_MC[4, ], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency",col = "red", ylim = c(0, 1),
-     main = "")
-lines(k, mean_Lacerda[4, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "green", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Terhorst[4, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Paris[4, ], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Terhorst2nd[4, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(0, 1),
-      main = "")
-lines(k, mean_Paris2nd[4, ], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(0, 1),
-      main = "")
-######################################## variance
-
-plot(k, var_MC[1, 1,], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(0, .002),
-     main = "")
-lines(k, var_Lacerda[1, 1,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst[1, 1,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris[1, 1,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst2nd[1, 1,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris2nd[1, 1,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, .002),
-      main = "")
-
-lines(k, var_MC[2, 2,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(0, .002),
-      main = "")
-lines(k, var_Lacerda[2, 2,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst[2, 2,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris[2, 2,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst2nd[2, 2,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris2nd[2, 2,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, .002),
-      main = "")
-
-lines(k, var_MC[3, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(0, .002),
-      main = "")
-lines(k, var_Lacerda[3, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst[3, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris[3, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst2nd[3, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris2nd[3, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(0, .002),
-      main = "")
-
-lines(k, var_MC[4, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "red", ylim = c(0, .002),
-      main = "")
-lines(k, var_Lacerda[4, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "green", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst[4, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris[4, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(0, .002),
-      main = "")
-lines(k, var_Terhorst2nd[4, 4,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(0, .002),
-      main = "")
-lines(k, var_Paris2nd[4, 4,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(0, .002),
-      main = "")
-
-################################### covariance
-plot(k, var_MC[1, 2,], type = "l", lwd = 1.5,
-     xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(-0.001, .0001),
-     main = "")
-lines(k, var_Lacerda[1, 2,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst[1, 2,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris[1, 2,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst2nd[1, 2,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris2nd[1, 2,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-
-lines(k, var_MC[1, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Lacerda[1, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst[1, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris[1, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst2nd[1, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris2nd[1, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-
-lines(k, var_MC[1, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "red", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Lacerda[1, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "green", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst[1, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris[1, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst2nd[1, 4,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris2nd[1, 4,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency", col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-
-lines(k, var_MC[2, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "red", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Lacerda[2, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "green", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst[2, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris[2, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst2nd[2, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris2nd[2, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-
-lines(k, var_MC[2, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "red", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Lacerda[2, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "green", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst[2, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris[2, 4,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-
-lines(k, var_MC[4, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "red", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Lacerda[4, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "green", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst[4, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris[4, 3,], type = "l", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Terhorst2nd[4, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "blue", ylim = c(-0.001, .0001),
-      main = "")
-lines(k, var_Paris2nd[4, 3,], type = "p", lwd = 1.5,
-      xlab = "Time", ylab = "Haplotype frequency",col = "yellow", ylim = c(-0.001, .0001),
-      main = "")
-
-################################################################################
-
-#' Simulate the Wright-Fisher model with different methods using Normal approximation
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
-#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param mnt_num the number of the Monte Carlo samples
-
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 150
-sim_num <- 1e+04
-mnt_num <- 1e+04
-
-frq_pth = simulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
-frq_pth_MC = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", mnt_num)
-frq_pth_Lacerda = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", mnt_num)
-frq_pth_Terhorst = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", mnt_num)
-frq_pth_Paris = simulateWFM_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", mnt_num)
-
-####################
-sim_frq_WFM <- matrix(NA, 4, mnt_num)
-sim_frq_MC <- matrix(NA, 4, mnt_num)
-sim_frq_Lacerda <- matrix(NA, 4, mnt_num)
-sim_frq_Terhorst <- matrix(NA, 4, mnt_num)
-sim_frq_Paris <- matrix(NA, 4, mnt_num)
-
-for (i in 1:sim_num) {
-  print(i)
-  sim_frq_WFM[, i] <- simulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, (lst_gen - int_gen) + 1]
-}
-sim_frq_MC = frq_pth_MC[, (lst_gen - int_gen) + 1, ]
-sim_frq_Lacerda <- frq_pth_Lacerda[, (lst_gen - int_gen) + 1, ]
-sim_frq_Terhorst <- frq_pth_Terhorst[, (lst_gen - int_gen) + 1, ]
-sim_frq_Paris <- frq_pth_Paris[, (lst_gen - int_gen) + 1, ]
-
-save(sel_cof, sel_cof, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, sim_frq_WFM, sim_frq_MC, sim_frq_Lacerda, sim_frq_Terhorst, sim_frq_Paris,
-     file = "./Desktop/Code v1.0/TEST_1L_WFM_vs_Normal.rda")
-
-load("./Desktop/Code v1.0/TEST_1L_WFM_vs_Normal.rda")
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_Normal_MC.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_MC[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_MC[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_MC[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_MC[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_Normal_Lacerda.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Lacerda[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Lacerda[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Lacerda[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Lacerda[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_Normal_Terhorst.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Terhorst[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Terhorst[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Terhorst[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Terhorst[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_Normal_Paris.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Paris[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Paris[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Paris[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the Normal approximation"))
-hist(sim_frq_Paris[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-
-################################################################################
-
-#' Simulate the Wright-Fisher model with different methods using LogitNormal approximation
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
-#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param mnt_num the number of the Monte Carlo samples
-
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 150
-sim_num <- 1e+04
-mnt_num <- 1e+04
-
-frq_pth = simulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
-frq_pth_MC = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", mnt_num)
-frq_pth_Lacerda = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", mnt_num)
-frq_pth_Terhorst = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", mnt_num)
-frq_pth_Paris = simulateWFM_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", mnt_num)
-
-####################
-sim_frq_WFM <- matrix(NA, 4, mnt_num)
-sim_frq_MC <- matrix(NA, 4, mnt_num)
-sim_frq_Lacerda <- matrix(NA, 4, mnt_num)
-sim_frq_Terhorst <- matrix(NA, 4, mnt_num)
-sim_frq_Paris <- matrix(NA, 4, mnt_num)
-
-for (i in 1:sim_num) {
-  print(i)
-  sim_frq_WFM[, i] <- simulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, (lst_gen - int_gen) + 1]
-}
-sim_frq_MC = frq_pth_MC[, (lst_gen - int_gen) + 1, ]
-sim_frq_Lacerda <- frq_pth_Lacerda[, (lst_gen - int_gen) + 1, ]
-sim_frq_Terhorst <- frq_pth_Terhorst[, (lst_gen - int_gen) + 1, ]
-sim_frq_Paris <- frq_pth_Paris[, (lst_gen - int_gen) + 1, ]
-
-save(sel_cof, sel_cof, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, sim_frq_WFM, sim_frq_MC, sim_frq_Lacerda, sim_frq_Terhorst, sim_frq_Paris,
-     file = "./Desktop/Code v1.0/TEST_1L_WFM_vs_LogitNormal.rda")
-
-load("./Desktop/Code v1.0/TEST_1L_WFM_vs_LogitNormal.rda")
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_LogitNormal_MC.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_MC[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_MC[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_MC[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_MC[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_LogitNormal_Lacerda.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Lacerda[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Lacerda[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Lacerda[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Lacerda[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_LogitNormal_Terhorst.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Terhorst[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Terhorst[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Terhorst[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Terhorst[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_LogitNormal_Paris.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Paris[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Paris[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Paris[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the LogitNormal approximation"))
-hist(sim_frq_Paris[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-#' Simulate the Wright-Fisher model with different methods using HierarchicalBeta approximation
-#' Parameter setting
-#' @param sel_cof the selection coefficients at loci A and B
-#' @param dom_par the dominance parameters at loci A and B
-#' @param rec_rat the recombination rate between loci A and B
-#' @param pop_siz the number of the diploid individuals in the population
-#' @param int_frq the initial haplotype frequencies of the population
-#' @param int_gen the first generation of the simulated haplotype frequency trajectories
-#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
-#' @param sim_num the number of the samples in Monte Carlo simulation
-#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
-#' @param mnt_num the number of the Monte Carlo samples
-
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+03
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 200
-sim_num <- 1e+04
-mnt_num <- 1e+04
-
-frq_pth_MC = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "MC", mnt_num)
-frq_pth_Lacerda = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Lacerda", mnt_num)
-frq_pth_Terhorst = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Terhorst", mnt_num)
-frq_pth_Paris = simulateWFM_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, "Paris", mnt_num)
-
-####################
-sim_frq_WFM <- matrix(NA, 4, mnt_num)
-sim_frq_MC <- matrix(NA, 4, mnt_num)
-sim_frq_Lacerda <- matrix(NA, 4, mnt_num)
-sim_frq_Terhorst <- matrix(NA, 4, mnt_num)
-sim_frq_Paris <- matrix(NA, 4, mnt_num)
-
-for (i in 1:sim_num) {
-  print(i)
-  sim_frq_WFM[, i] <- simulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, (lst_gen - int_gen) + 1]
-}
-sim_frq_MC = frq_pth_MC[, (lst_gen - int_gen) + 1, ]
-sim_frq_Lacerda <- frq_pth_Lacerda[, (lst_gen - int_gen) + 1, ]
-sim_frq_Terhorst <- frq_pth_Terhorst[, (lst_gen - int_gen) + 1, ]
-sim_frq_Paris <- frq_pth_Paris[, (lst_gen - int_gen) + 1, ]
-
-save(sel_cof, sel_cof, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, sim_frq_WFM, sim_frq_MC, sim_frq_Lacerda, sim_frq_Terhorst, sim_frq_Paris,
-     file = "./Desktop/Code v1.0/TEST_1L_WFM_vs_HieraBeta.rda")
-
-load("./Desktop/Code v1.0/TEST_1L_WFM_vs_HieraBeta.rda")
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_HieraBeta_MC.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_MC[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_MC[1, ]), max(sim_frq_WFM[1, ], sim_frq_MC[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_MC[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_MC[2, ]), max(sim_frq_WFM[2, ], sim_frq_MC[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_MC[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_MC[3, ]), max(sim_frq_WFM[3, ], sim_frq_MC[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_MC[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_MC[4, ]), max(sim_frq_WFM[4, ], sim_frq_MC[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_HieraBeta_Lacerda.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Lacerda[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), max(sim_frq_WFM[1, ], sim_frq_Lacerda[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Lacerda[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), max(sim_frq_WFM[2, ], sim_frq_Lacerda[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Lacerda[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), max(sim_frq_WFM[3, ], sim_frq_Lacerda[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Lacerda[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), max(sim_frq_WFM[4, ], sim_frq_Lacerda[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_HieraBeta_Terhorst.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Terhorst[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), max(sim_frq_WFM[1, ], sim_frq_Terhorst[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Terhorst[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), max(sim_frq_WFM[2, ], sim_frq_Terhorst[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Terhorst[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), max(sim_frq_WFM[3, ], sim_frq_Terhorst[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Terhorst[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), max(sim_frq_WFM[4, ], sim_frq_Terhorst[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-pdf(file = "./Desktop/Code v1.0/TEST_2L_WFM_vs_HieraBeta_Paris.pdf", width = 20, height = 10)
-par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-hist(sim_frq_WFM[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Paris[1, ], breaks = seq(min(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), max(sim_frq_WFM[1, ], sim_frq_Paris[1, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Paris[2, ], breaks = seq(min(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), max(sim_frq_WFM[2, ], sim_frq_Paris[2, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Paris[3, ], breaks = seq(min(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), max(sim_frq_WFM[3, ], sim_frq_Paris[3, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-hist(sim_frq_WFM[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), length.out = 50), freq = FALSE, col = rgb(0.1, 0.1, 0.1, 0.5),
-     xlim = c(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ])),
-     xlab = "Allele frequency",
-     main = paste("Histograms of the mutant allele frequency in generation", lst_gen, "under the Wright-Fisher model and the HierarchicalBeta approximation"))
-hist(sim_frq_Paris[4, ], breaks = seq(min(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), max(sim_frq_WFM[4, ], sim_frq_Paris[4, ]), length.out = 50), freq = FALSE, col = rgb(0.8, 0.8, 0.8, 0.5), add = TRUE)
-
-dev.off()
-
-#' Compare the simulation generated with the Wright-Fisher model and the Wright-Fisher diffusion
-sel_cof <- c(1e-02, 5e-03)
-dom_par <- c(5e-01, 5e-01)
-rec_rat <- 1e-03
-pop_siz <- 5e+02
-int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
-int_gen <- 0
-lst_gen <- 5
-ptn_num <- 5e+02
-sim_num <- 1e+04
-
-sim_frq_WFM <- array(NA, c(sim_num, 4, lst_gen - int_gen + 1))
-sim_frq_WFD <- array(NA, c(sim_num, 4, lst_gen - int_gen + 1))
-for (i in 1:sim_num) {
-  print(i)
-  sim_frq_WFM[i, ,] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)
-  sim_frq_WFD[i, ,] <- cmpsimulateDiffusApprox(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = FALSE)
-}
-
-dist = cmpcalculateRMSD_2nd(sim_frq_WFM, sim_frq_WFD, int_gen, lst_gen, sim_num, 100, rnd_grd = TRUE)
-
