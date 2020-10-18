@@ -37,7 +37,7 @@ source("./Code/Code v1.0/RFUN.R")
 # dom_par <- c(5e-01, 5e-01)
 # rec_rat <- 1e-05
 # pop_siz <- 5e+03
-# int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+# int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 # int_gen <- 0
 # lst_gen <- 500
 #
@@ -75,7 +75,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 ptn_num <- 5e+00
@@ -110,7 +110,7 @@ save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim
 
 load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
 
-gen <- 100
+gen <- 500
 smp_mod <- smp_mod[, gen, ]
 smp_apx <- smp_apx[, gen, ]
 
@@ -160,7 +160,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -246,8 +246,8 @@ for (i in 1:5) {
     lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
      xlab = "Generation", ylab = "Variance",
      main = "Moment approximation of the Wright-Fisher model: variance")
@@ -256,8 +256,8 @@ for (i in 1:5) {
     lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
      xlab = "Generation", ylab = "Covariance",
      main = "Moment approximation of the Wright-Fisher model: covariance")
@@ -266,8 +266,8 @@ for (i in 1:5) {
     lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = mnt_apx, col = "black", lty = 1:5, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 dev.off()
 
 ################################################################################
@@ -288,7 +288,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -317,7 +317,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
@@ -326,20 +326,18 @@ mnt_num <- 1e+05
 
 system.time(smp_apx <- cmpgenerateSample_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
 
-# smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-# for (i in 1:sim_num) {
-#   print(i)
-#   smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
-# }
-
-load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
+smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+for (i in 1:sim_num) {
+  print(i)
+  smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+}
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
      file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.rda")
 
 load("./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.rda")
 
-gen <- 100
+gen <- 500
 smp_mod <- smp_mod[, gen, ]
 smp_apx <- smp_apx[, gen, ]
 
@@ -390,7 +388,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
@@ -441,8 +439,8 @@ for (i in 1:2) {
     lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
      xlab = "Generation", ylab = "Variance",
      main = "Moment approximation of the normal approximation: variance")
@@ -451,8 +449,8 @@ for (i in 1:2) {
     lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
      xlab = "Generation", ylab = "Covariance",
      main = "Moment approximation of the normal approximation: covariance")
@@ -461,8 +459,8 @@ for (i in 1:2) {
     lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 dev.off()
 
 ################################################################################
@@ -483,7 +481,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -512,7 +510,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
@@ -521,20 +519,18 @@ mnt_num <- 1e+05
 
 system.time(smp_apx <- generateSample_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
 
-# smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-# for (i in 1:sim_num) {
-#   print(i)
-#   smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
-# }
-
-load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
+smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+for (i in 1:sim_num) {
+  print(i)
+  smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+}
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
      file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.rda")
 
 load("./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.rda")
 
-gen <- 100
+gen <- 500
 smp_mod <- smp_mod[, gen, ]
 smp_apx <- smp_apx[, gen, ]
 
@@ -585,7 +581,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
@@ -636,8 +632,8 @@ for (i in 1:2) {
     lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
      xlab = "Generation", ylab = "Variance",
      main = "Moment approximation of the logistic normal approximation: variance")
@@ -646,8 +642,8 @@ for (i in 1:2) {
     lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
      xlab = "Generation", ylab = "Covariance",
      main = "Moment approximation of the logistic normal approximation: covariance")
@@ -656,8 +652,8 @@ for (i in 1:2) {
     lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "logistic normal"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 dev.off()
 
 ################################################################################
@@ -678,7 +674,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -707,7 +703,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 sim_num <- 1e+05
@@ -716,13 +712,11 @@ mnt_num <- 1e+05
 
 system.time(smp_apx <- cmpgenerateSample_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num))
 
-# smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-# for (i in 1:sim_num) {
-#   print(i)
-#   smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
-# }
-
-load("./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
+smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+for (i in 1:sim_num) {
+  print(i)
+  smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+}
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
      file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Approx.rda")
@@ -779,7 +773,7 @@ sel_cof <- c(1e-02, 5e-03)
 dom_par <- c(5e-01, 5e-01)
 rec_rat <- 1e-05
 pop_siz <- 5e+03
-int_frq <- c(1e-01, 1e-01, 1e-01, 7e-01)
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
 int_gen <- 0
 lst_gen <- 500
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
@@ -829,8 +823,8 @@ for (i in 1:2) {
     lines(k, mean[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(variance), max(variance)),
      xlab = "Generation", ylab = "Variance",
      main = "Moment approximation of the hierarchical beta approximation: variance")
@@ -839,8 +833,8 @@ for (i in 1:2) {
     lines(k, variance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 4, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1", "A1B2", "A2B1", "A2B2"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 plot(0, type = "n", xlim = c(int_gen + 1, lst_gen), ylim = c(min(covariance), max(covariance)),
      xlab = "Generation", ylab = "Covariance",
      main = "Moment approximation of the hierarchical beta approximation: covariance")
@@ -849,8 +843,8 @@ for (i in 1:2) {
     lines(k, covariance[i, j, ], type = "l", lty = i, lwd = 1.5, col = brewer.pal(n = 6, name = 'Set1')[j])
   }
 }
-legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1)
-legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1)
+legend("topleft", legend = c("Wright-Fisher", "hierarchical beta"), col = "black", lty = 1:2, lwd = 1.5, bty = "n", cex = 1.5)
+legend("bottomleft", legend = c("A1B1/A1B2", "A1B1/A2B1", "A1B2/A2B1", "A1B1/A2B2", "A1B2/A2B2", "A2B1/A2B2"), col = brewer.pal(n = 6, name = 'Set1'), lty = 1, lwd = 1.5, bty = "n", cex = 1.5)
 dev.off()
 
 ################################################################################
