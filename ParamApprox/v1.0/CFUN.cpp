@@ -641,7 +641,7 @@ List calculateParam_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dc
     arma::dcolvec V = arma::zeros<arma::dcolvec>(3);
     V(0) = (variance(0, 0, k) - variance(1, 1, k)) / (m(1) * m(1) - (1 - m(1)) * (1 - m(1)));
     V(1) = (variance(0, 0, k) + variance(1, 1, k) - (m(1) * m(1) + (1 - m(1)) * (1 - m(1))) * V(0)) / 2 / (m(0) * m(0) + V(0));
-    V(2) = (variance(2, 2, k) + variance(3, 3, k) - (m(2) * m(2) + (1 - m(2)) * (1 - m(2))) * V(0)) / 2 / ((1 - m(0)) * (1 - m(0)) + V(0));
+    V(2) = (variance(2, 2, k) - m(2) * m(2) * V(0)) / ((1 - m(0)) * (1 - m(0)) + V(0));
 
     // calculate the parameters of the hierarchical beta approximation
     alpha.col(k) = (m % (1 - m) / V - 1) % m;
