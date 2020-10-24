@@ -398,8 +398,8 @@ calculateRMSD <- function(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE) {
   }
 
   dist <- rep(NA, length.out = dim(smp_mod)[3])
-  ECDF_mod <- calculateECDF_2L_arma(smp_mod, sim_num, frq_grd)
-  ECDF_apx <- calculateECDF_2L_arma(smp_apx, sim_num, frq_grd)
+  ECDF_mod <- calculateECDF_2L_arma(smp_mod, frq_grd)
+  ECDF_apx <- calculateECDF_2L_arma(smp_apx, frq_grd)
   for (k in 1:dim(smp_mod)[3]) {
     dist[k] <- sqrt(sum((ECDF_mod[, k] - ECDF_apx[, k])^2) / dim(smp_mod)[1])
   }
