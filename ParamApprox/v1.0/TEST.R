@@ -856,8 +856,28 @@ dev.off()
 #' @param grd_num the grid number for the empirical probability distribution function
 #' @param rnd_grd = TRUE/FALSE (return the root mean square deviation between the empirical cumulative distribution functions with random grid points or not)
 
+sel_cof <- c(1e-02, 5e-03)
+dom_par <- c(5e-01, 5e-01)
+rec_rat <- 1e-05
+pop_siz <- 5e+03
+int_frq <- c(1e-01, 2e-01, 3e-01, 4e-01)
+int_gen <- 0
+lst_gen <- 500
+ptn_num <- 5e+00
+sim_num <- 1e+04
+smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+smp_apx <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+for (i in 1:sim_num) {
+  smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+  smp_apx[, , i] <- cmpsimulateDiffusApprox(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = FALSE)[, 2:(lst_gen - int_gen + 1)]
+}
 
+grd_num <- 1e+05
+rnd_grd <- TRUE
+RMSD <- cmpcalculateRMSD(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE)
 
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, smp_mod, smp_apx,
+     file = "./Output/Output v1.0/Test v1.0/TEST_Diffus.rda")
 
 
 ################################################################################
