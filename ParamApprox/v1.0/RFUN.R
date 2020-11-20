@@ -382,6 +382,94 @@ cmpapproximateMoment_HierarchicalBeta <- cmpfun(approximateMoment_HierarchicalBe
 
 ########################################
 
+#' Calculate the parameters for the pyramidal hierarchical beta approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+#' Standard version
+calculateParam_PyramidalHierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
+  if (mnt_apx == "MC") {
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+  } else {
+    mnt <- cmpapproximateMoment_WFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+  }
+  param <- calculateParam_PyramidalHierarchicalBeta_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
+
+  return(list(alpha = as.matrix(param$alpha),
+              beta = as.matrix(param$beta)))
+}
+#' Compiled version
+cmpcalculateParam_PyramidalHierarchicalBeta <- cmpfun(calculateParam_PyramidalHierarchicalBeta)
+
+########################################
+
+#' Generate the samples under the pyramidal hierarchical beta approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param sim_num the number of the Monte Carlo samples
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+#' Standard version
+generateSample_PyramidalHierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, ...) {
+  if (mnt_apx == "MC") {
+    param <- cmpcalculateParam_PyramidalHierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+  } else {
+    param <- cmpcalculateParam_PyramidalHierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+  }
+  frq_pth <- generateSample_PyramidalHierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen, sim_num)
+  frq_pth <- as.array(frq_pth)
+
+  return(frq_pth)
+}
+#' Compiled version
+cmpgenerateSample_PyramidalHierarchicalBeta <- cmpfun(generateSample_PyramidalHierarchicalBeta)
+
+########################################
+
+#' Approximate the moments of the pyramidal hierarchical beta approximation of the two-locus Wright-Fisher model with selection
+#' Parameter setting
+#' @param sel_cof the selection coefficients at loci A and B
+#' @param dom_par the dominance parameters at loci A and B
+#' @param rec_rat the recombination rate between loci A and B
+#' @param pop_siz the number of the diploid individuals in the population
+#' @param int_frq the initial haplotype frequencies of the population
+#' @param int_gen the first generation of the simulated haplotype frequency trajectories
+#' @param lst_gen the last generation of the simulated haplotype frequency trajectories
+#' @param mnt_apx the moment approximation (Monte Carlo, Lacerda & Seoighe (2014), Terhorst et al. (2015) or Paris et al. (2019))
+#' @param mnt_num the number of the Monte Carlo samples for the moment approximations
+
+#' Standard version
+approximateMoment_PyramidalHierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, ...) {
+  if (mnt_apx == "MC") {
+    param <- cmpcalculateParam_PyramidalHierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num)
+  } else {
+    param <- cmpcalculateParam_PyramidalHierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
+  }
+  mnt <- approximateMoment_PyramidalHierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen)
+
+  return(list(mean = as.matrix(mnt$mean),
+              variance = as.array(mnt$variance)))
+}
+#' Compiled version
+cmpapproximateMoment_PyramidalHierarchicalBeta <- cmpfun(approximateMoment_PyramidalHierarchicalBeta)
+
+########################################
+
 #' Calculate the root mean square deviation between the two empirical cumulative distribution functions
 #' Parameter setting
 #' @param smp_mod the sample trajectories generated under the Wright-Fisher model
@@ -397,16 +485,32 @@ calculateRMSD <- function(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE) {
     frq_grd <- generateFixGrid_2L_arma(grd_num)
   }
 
-  dist <- rep(NA, length.out = dim(smp_mod)[3])
-  ECDF_mod <- calculateECDF_2L_arma(smp_mod, frq_grd)
-  ECDF_apx <- calculateECDF_2L_arma(smp_apx, frq_grd)
-  for (k in 1:dim(smp_mod)[3]) {
-    dist[k] <- sqrt(sum((ECDF_mod[, k] - ECDF_apx[, k])^2) / dim(smp_mod)[1])
+  dist <- rep(NA, length.out = dim(smp_mod)[2])
+  cdf_mod <- calculateECDF_2L_arma(smp_mod, sim_num, frq_grd)
+  cdf_apx <- calculateECDF_2L_arma(smp_apx, sim_num, frq_grd)
+  for (k in 1:dim(smp_mod)[2]) {
+    dist[k] <- sqrt(sum((cdf_mod[, k] - cdf_apx[, k])^2) / grd_num)
   }
 
   return(dist)
 }
 #' Compiled version
 cmpcalculateRMSD <- cmpfun(calculateRMSD)
+
+########################################
+
+#' Calculate the root mean square deviation between the two empirical cumulative distribution functions
+#' Parameter setting
+#' @param smp_mod the sample trajectories generated under the Wright-Fisher model
+
+#' Standard version
+generateInitFreq <- function(smp_siz) {
+  int_frq <- generateInitFreq_arma(smp_siz)
+  int_frq <- as.matrix(int_frq)
+
+  return(int_frq)
+}
+#' Compiled version
+cmpgenerateInitFreq <- cmpfun(generateInitFreq)
 
 ################################################################################
