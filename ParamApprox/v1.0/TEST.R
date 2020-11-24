@@ -815,50 +815,51 @@ sim_num <- 1e+06
 mnt_apx <- c("MC", "Lacerda", "Terhorst", "Paris1", "Paris2")
 mnt_num <- 1e+06
 
-smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-smp_apx_diffus <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-smp_apx_norm <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-smp_apx_lognorm <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-smp_apx_hbeta <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
-for (i in 1:sim_num) {
-  smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
-  smp_apx_diffus[, , i] <- cmpsimulateDiffusApprox(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = FALSE)[, 2:(lst_gen - int_gen + 1)]
-}
-smp_apx_norm <- cmpgenerateSample_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num)
-smp_apx_lognorm <- generateSample_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num)
-smp_apx_hbeta <- cmpgenerateSample_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num)
-
 k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
-smp_mod <- smp_mod[, k, ]
-smp_apx_diffus <- smp_apx_diffus[, k, ]
-smp_apx_norm <- smp_apx_norm[, k, ]
-smp_apx_lognorm <- smp_apx_lognorm[, k, ]
-smp_apx_hbeta <- smp_apx_hbeta[, k, ]
-grd_num <- 5e+03
-
 RMSD <- matrix(NA, nrow = 4, ncol = length(k))
 
-system.time(RMSD[1, ] <- cmpcalculateRMSD(smp_mod, smp_apx_diffus, sim_num, grd_num, rnd_grd = TRUE))
-system.time(RMSD[2, ] <- cmpcalculateRMSD(smp_mod, smp_apx_norm, sim_num, grd_num, rnd_grd = TRUE))
-system.time(RMSD[3, ] <- cmpcalculateRMSD(smp_mod, smp_apx_lognorm, sim_num, grd_num, rnd_grd = TRUE))
-system.time(RMSD[4, ] <- cmpcalculateRMSD(smp_mod, smp_apx_hbeta, sim_num, grd_num, rnd_grd = TRUE))
+smp_mod <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+smp_apx <- array(NA, dim = c(4, lst_gen - int_gen, sim_num))
+for (i in 1:sim_num) {
+  smp_mod[, , i] <- cmpsimulateWFM(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen)[, 2:(lst_gen - int_gen + 1)]
+  smp_apx[, , i] <- cmpsimulateDiffusApprox(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, dat_aug = FALSE)[, 2:(lst_gen - int_gen + 1)]
+}
+smp_mod <- smp_mod[, k, ]
+smp_apx <- smp_apx[, k, ]
+grd_num <- 5e+03
+system.time(RMSD[1, ] <- cmpcalculateRMSD(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE))
 
-save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, smp_mod, smp_apx_diffus, smp_apx_norm, smp_apx_lognorm, smp_apx_hbeta, grd_num, RMSD,
+smp_apx <- cmpgenerateSample_Norm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num)
+smp_apx <- smp_apx[, k, ]
+# grd_num <- 5e+03
+system.time(RMSD[2, ] <- cmpcalculateRMSD(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE))
+
+smp_apx <- generateSample_LogisticNorm(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num)
+smp_apx <- smp_apx[, k, ]
+# grd_num <- 5e+03
+system.time(RMSD[3, ] <- cmpcalculateRMSD(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE))
+
+smp_apx <- cmpgenerateSample_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx[1], mnt_num)
+smp_apx <- smp_apx[, k, ]
+# grd_num <- 5e+03
+system.time(RMSD[4, ] <- cmpcalculateRMSD(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE))
+
+save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, grd_num, RMSD,
      file = "./Output/Output v1.0/Test v1.0/TEST_RMSD.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_RMSD.rda")
-#
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_RMSD.pdf", width = 12, height = 9)
-# par(mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
-# k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
-#
-# plot(0, type = "n", xlim = c(min(k), max(k)), ylim = c(min(RMSD), max(RMSD)),
-#      xlab = "Generation", ylab = "RMSD",
-#      main = "RMSD of the Wright-Fisher model and its approxs")
-# for (i in 1:4) {
-#   lines(k, RMSD[i, ], type = "b", lty = 1, lwd = 1.5, pch = 14 + i, col = brewer.pal(n = 4, name = 'Set1')[i])
-# }
-# legend("topleft", legend = c("diffus", "norm", "log norm", "hierarchical beta"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, pch = 14 + (1:4), bty = "n", cex = 1.5)
-# dev.off()
+load("./Output/Output v1.0/Test v1.0/TEST_RMSD.rda")
+
+pdf(file = "./Output/Output v1.0/Test v1.0/TEST_RMSD.pdf", width = 12, height = 9)
+par(mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
+k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
+
+plot(0, type = "n", xlim = c(min(k), max(k)), ylim = c(min(RMSD), max(RMSD)),
+     xlab = "Generation", ylab = "RMSD",
+     main = "RMSD of the Wright-Fisher model and its approxs")
+for (i in 1:4) {
+  lines(k, RMSD[i, ], type = "b", lty = 1, lwd = 1.5, pch = 14 + i, col = brewer.pal(n = 4, name = 'Set1')[i])
+}
+legend("topleft", legend = c("diffus", "norm", "log norm", "hierarchical beta"), col = brewer.pal(n = 4, name = 'Set1'), lty = 1, lwd = 1.5, pch = 14 + (1:4), bty = "n", cex = 1.5)
+dev.off()
 
 ################################################################################
