@@ -1,7 +1,7 @@
 #' @title Moment-based approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
-#' @author Zhangyi He, Wenyang Lyu, Mark Beaumont and Feng Yu
+#' @author Zhangyi He, Wenyang Lyu, Mark Beaumont, Feng Yu
 
-#' version 1.0
+#' version 1.0.1
 
 #' R functions
 
@@ -17,7 +17,7 @@ library("compiler")
 #enableJIT(1)
 
 # call C++ functions
-sourceCpp("./Code/Code v1.0/CFUN.cpp")
+sourceCpp("./CFUN.cpp")
 
 ################################################################################
 
@@ -316,7 +316,9 @@ calculateParam_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, 
   param <- calculateParam_HierarchicalBeta_arma(mnt$mean, mnt$variance, int_gen, lst_gen)
 
   return(list(alpha = as.matrix(param$alpha),
-              beta = as.matrix(param$beta)))
+              beta = as.matrix(param$beta),
+              index = as.matrix(param$index),
+              trans = as.array(param$trans)))
 }
 #' Compiled version
 cmpcalculateParam_HierarchicalBeta <- cmpfun(calculateParam_HierarchicalBeta)
@@ -343,7 +345,7 @@ generateSample_HierarchicalBeta <- function(sel_cof, dom_par, rec_rat, pop_siz, 
   } else {
     param <- cmpcalculateParam_HierarchicalBeta(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx)
   }
-  frq_pth <- generateSample_HierarchicalBeta_arma(param$alpha, param$beta, int_gen, lst_gen, sim_num)
+  frq_pth <- generateSample_HierarchicalBeta_arma(param$alpha, param$beta, param$trans, int_gen, lst_gen, sim_num)
   frq_pth <- as.array(frq_pth)
 
   return(frq_pth)
@@ -470,27 +472,37 @@ cmpapproximateMoment_PyramidalHierarchicalBeta <- cmpfun(approximateMoment_Pyram
 
 ########################################
 
-#' Calculate the root mean square deviation between the two empirical cumulative distribution functions
+#' Generate the grids for empirical cumulative distribution function
 #' Parameter setting
-#' @param smp_mod the sample trajectories generated under the Wright-Fisher model
-#' @param smp_apx the sample trajectories generated under the approximation of the Wright-Fisher model
 #' @param grd_num the grid number for the empirical probability distribution function
 #' @param rnd_grd = TRUE/FALSE (return the root mean square deviation between the empirical cumulative distribution functions with random grid points or not)
 
 #' Standard version
-calculateRMSD <- function(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE) {
+generateGrid <- function(grd_num, rnd_grd = TRUE) {
   if (rnd_grd == TRUE) {
     frq_grd <- generateRndGrid_2L_arma(grd_num)
   } else {
     frq_grd <- generateFixGrid_2L_arma(grd_num)
   }
 
-  dist <- rep(NA, length.out = dim(smp_mod)[2])
-  cdf_mod <- calculateECDF_2L_arma(smp_mod, sim_num, frq_grd)
-  cdf_apx <- calculateECDF_2L_arma(smp_apx, sim_num, frq_grd)
-  for (k in 1:dim(smp_mod)[2]) {
-    dist[k] <- sqrt(sum((cdf_mod[, k] - cdf_apx[, k])^2) / grd_num)
-  }
+  return(frq_grd)
+}
+#' Compiled version
+cmpgenerateGrid <- cmpfun(generateGrid)
+
+########################################
+
+#' Calculate the root mean square deviation between the two empirical cumulative distribution functions
+#' Parameter setting
+#' @param smp_mod the sample trajectories generated under the Wright-Fisher model
+#' @param smp_apx the sample trajectories generated under the approximation of the Wright-Fisher model
+#' @param grd_num the grid number for the empirical probability distribution function
+#' @param grd_pts the grid points for the empirical probability distribution function
+
+#' Standard version
+calculateRMSD <- function(smp_mod, smp_apx, sim_num, grd_num, grd_pts) {
+  dist <- calculateRMSD_arma(smp_mod, smp_apx, sim_num, grd_num, grd_pts)
+  dist <- as.vector(dist)
 
   return(dist)
 }
