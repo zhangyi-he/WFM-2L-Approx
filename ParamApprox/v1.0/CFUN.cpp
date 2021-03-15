@@ -1,7 +1,7 @@
 // Moment-based approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
-// Zhangyi He, Wenyang Lyu, Mark Beaumont and Feng Yu
+// Zhangyi He, Wenyang Lyu, Mark Beaumont, Feng Yu
 
-// version 1.0
+// version 1.0.1
 
 // C functions
 
@@ -453,18 +453,6 @@ arma::dcube generateSample_Norm_arma(const arma::dmat& mean, const arma::dcube& 
     hap_frq.insert_rows(3, 1);
     hap_frq.row(3) = 1 - hap_frq.row(0) - hap_frq.row(1) - hap_frq.row(2);
     frq_pth.col(k) = hap_frq;
-
-    // arma::dcolvec eigval;
-    // arma::dmat eigvec;
-    // arma::eig_sym(eigval, eigvec, variance.slice(k));
-    // eigval.elem(arma::find(eigval < 0)).zeros();
-    //
-    // arma::dmat hap_frq = arma::randn<arma::dmat>(4, sim_num);
-    // hap_frq = pow(eigval, 0.5) % hap_frq.each_col();
-    // hap_frq = eigvec * hap_frq;
-    // frq_pth.col(k) = mean.col(k) + hap_frq.each_col();
-
-    // frq_pth.col(k) = arma::mvnrnd(mean.col(k), variance.slice(k), sim_num);
   }
 
   // return the haplotype frequency trajectories under the normal approximation
@@ -579,6 +567,7 @@ arma::dcube generateSample_LogisticNorm_arma(const arma::dmat& location, const a
   // simulate the haplotype frequency trajectories under the logistic normal approximation
   arma::dcube frq_pth = arma::zeros<arma::dcube>(4, arma::uword(lst_gen - int_gen), sim_num);
   for (arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
+    cout << "iteration: " << k << endl;
     arma::dcolvec eigval;
     arma::dmat eigvec;
     arma::eig_sym(eigval, eigvec, scalesq.slice(k));
@@ -621,6 +610,57 @@ List approximateMoment_LogisticNorm_arma(const arma::dmat& location, const arma:
                       Named("variance", variance));
 }
 
+// Calculate the permutation matrix
+// [[Rcpp::export]]
+arma::dmat calculatePermutationMatrix_arma() {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dmat perm = arma::zeros<arma::dmat>(24, 4);
+  perm(arma::span(0, 5), 0) = 0 * arma::ones<arma::dcolvec>(6);
+  perm(arma::span(0, 1), 1) = 1 * arma::ones<arma::dcolvec>(2);
+  perm(arma::span(2, 3), 1) = 2 * arma::ones<arma::dcolvec>(2);
+  perm(arma::span(4, 5), 1) = 3 * arma::ones<arma::dcolvec>(2);
+  perm(arma::span(0, 5), 2) = {2, 3, 1, 3, 1, 2};
+  perm(arma::span(0, 5), 3) = {3, 2, 3, 1, 2, 1};
+  perm(arma::span(6, 11), arma::span(0, 2)) = perm(arma::span(0, 5), arma::span(1, 3));
+  perm(arma::span(6, 11), 3) = perm(arma::span(0, 5), 0);
+  perm(arma::span(12, 17), arma::span(0, 2)) = perm(arma::span(6, 11), arma::span(1, 3));
+  perm(arma::span(12, 17), 3) = perm(arma::span(6, 11), 0);
+  perm(arma::span(18, 23), arma::span(0, 2)) = perm(arma::span(12, 17), arma::span(1, 3));
+  perm(arma::span(18, 23), 3) = perm(arma::span(12, 17), 0);
+
+  return perm;
+}
+
+// Calculate the parameters for the hierarchical beta approximation of the Wright-Fisher model (a single generation)
+// [[Rcpp::export]]
+arma::dmat calculateParam_HierarchicalBeta_OneStep_arma(const arma::dcolvec& mean, const arma::dmat& variance) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  // calculate the mean of the beta distributions
+  arma::dcolvec m = arma::zeros<arma::dcolvec>(3);
+  m(0) = mean(0) + mean(1);
+  m(1) = mean(0) / (mean(0) + mean(1));
+  m(2) = mean(2) / (mean(2) + mean(3));
+
+  // calculate the variance of the beta distributions
+  arma::dcolvec V = arma::zeros<arma::dcolvec>(3);
+  V(0) = (variance(0, 0) - variance(1, 1)) / (m(1) * m(1) - (1 - m(1)) * (1 - m(1)));
+  V(1) = (variance(0, 0) + variance(1, 1) - (m(1) * m(1) + (1 - m(1)) * (1 - m(1))) * V(0)) / 2 / (m(0) * m(0) + V(0));
+  // V(2) = (variance(2, 2) + variance(3, 3) - (m(2) * m(2) + (1 - m(2)) * (1 - m(2))) * V(0)) / 2 / ((1 - m(0)) * (1 - m(0)) + V(0));
+  V(2) = (variance(2, 2) - m(2) * m(2) * V(0)) / ((1 - m(0)) * (1 - m(0)) + V(0));
+
+  // calculate the parameters of the hierarchical beta approximation
+  arma::dmat param = arma::zeros<arma::dmat>(3, 2);
+  param.col(0) = (m % (1 - m) / V - 1) % m;
+  param.col(1) = (m % (1 - m) / V - 1) % (1 - m);
+
+  // return the parameters of the hierarchical beta approximation
+  return param;
+}
+
 // Calculate the parameters for the hierarchical beta approximation of the Wright-Fisher model
 // [[Rcpp::export]]
 List calculateParam_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dcube& variance, const int& int_gen, const int& lst_gen) {
@@ -630,33 +670,87 @@ List calculateParam_HierarchicalBeta_arma(const arma::dmat& mean, const arma::dc
   // calculate the parameters of the hierarchical beta approximation
   arma::dmat alpha = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen));
   arma::dmat beta = arma::zeros<arma::dmat>(3, arma::uword(lst_gen - int_gen));
+  arma::dmat perm = calculatePermutationMatrix_arma();
+  arma::dmat index = arma::zeros<arma::dmat>(2, arma::uword(lst_gen - int_gen));
+  arma::dcube trans = arma::zeros<arma::dcube>(4, 4, arma::uword(lst_gen - int_gen));
+
   for (arma::uword k = 0; k < arma::uword(lst_gen - int_gen); k++) {
-    // calculate the mean of the beta distributions
-    arma::dcolvec m = arma::zeros<arma::dcolvec>(3);
-    m(0) = mean(0, k) + mean(1, k);
-    m(1) = mean(0, k) / (mean(0, k) + mean(1, k));
-    m(2) = mean(2, k) / (mean(2, k) + mean(3, k));
-
-    // calculate the variance of the beta distributions
-    arma::dcolvec V = arma::zeros<arma::dcolvec>(3);
-    V(0) = (variance(0, 0, k) - variance(1, 1, k)) / (m(1) * m(1) - (1 - m(1)) * (1 - m(1)));
-    V(1) = (variance(0, 0, k) + variance(1, 1, k) - (m(1) * m(1) + (1 - m(1)) * (1 - m(1))) * V(0)) / 2 / (m(0) * m(0) + V(0));
-    //V(2) = (variance(2, 2, k) + variance(3, 3, k) - (m(2) * m(2) + (1 - m(2)) * (1 - m(2))) * V(0)) / 2 / ((1 - m(0)) * (1 - m(0)) + V(0));
-    V(2) = (variance(2, 2, k) - m(2) * m(2) * V(0)) / ((1 - m(0)) * (1 - m(0)) + V(0));
-
     // calculate the parameters of the hierarchical beta approximation
-    alpha.col(k) = (m % (1 - m) / V - 1) % m;
-    beta.col(k) = (m % (1 - m) / V - 1) % (1 - m);
+    arma::dmat param = calculateParam_HierarchicalBeta_OneStep_arma(mean.col(k), variance.slice(k));
+    if (param.min() < 0) {
+      for (arma::uword i = 1; i < 24; i++) {
+        arma::dmat perm_mat = arma::zeros<arma::dmat>(4, 4);
+        perm_mat(0, perm(i, 0)) = 1;
+        perm_mat(1, perm(i, 1)) = 1;
+        perm_mat(2, perm(i, 2)) = 1;
+        perm_mat(3, perm(i, 3)) = 1;
+
+        arma::dcolvec mean_perm = perm_mat * mean.col(k);
+        arma::dmat variance_perm = perm_mat * variance.slice(k) * perm_mat;
+        arma::dmat param_perm = calculateParam_HierarchicalBeta_OneStep_arma(mean_perm, variance_perm);
+        if (param_perm.min() > 0 && param_perm.is_finite() == true) {
+          index(1, k) = 1;
+          trans.slice(k) = perm_mat;
+          alpha.col(k) = param_perm.col(0);
+          beta.col(k) = param_perm.col(1);
+
+          break;
+        }
+      }
+
+      double delta = (2 * 5000 - 1); // an ad-hoc procedure for avoiding non-positive shape parameters
+      if (alpha(0, k) == 0 || beta(0, k) == 0) {
+        arma::uvec order_vec = arma::sort_index(mean.col(k));
+        arma::dmat perm_mat = arma::zeros<arma::dmat>(4, 4);
+        perm_mat(0, order_vec(0)) = 1;
+        perm_mat(1, order_vec(1)) = 1;
+        perm_mat(2, order_vec(2)) = 1;
+        perm_mat(3, order_vec(3)) = 1;
+
+        trans.slice(k) = perm_mat;
+        arma::dcolvec mean_perm = trans.slice(k) * mean.col(k);
+        arma::dmat variance_perm = (trans.slice(k)) * variance.slice(k) * (trans.slice(k));
+        arma::dmat param_perm = calculateParam_HierarchicalBeta_OneStep_arma(mean_perm, variance_perm);
+        if (param_perm(0, 0) > 0 && param_perm.row(0).is_finite() == true) {
+          alpha(0, k) = param_perm(0, 0);
+          beta(0, k) = param_perm(0, 1);
+        } else {
+          alpha(0, k) = delta * (mean_perm(0) + mean_perm(1));
+          beta(0, k) = delta * (1.0 - mean_perm(0) - mean_perm(1));
+        }
+        if (param_perm(1, 0) > 0 && param_perm.row(1).is_finite() == true) {
+          alpha(1, k) = param_perm(1, 0);
+          beta(1, k) = param_perm(1, 1);
+        } else {
+          alpha(1, k) = delta * (mean_perm(0) / (mean_perm(0) + mean_perm(1)));
+          beta(1, k) = delta * (1.0 - mean_perm(0) / (mean_perm(0) + mean_perm(1)));
+        }
+        if (param_perm(2, 0) > 0 && param_perm.row(2).is_finite() == true) {
+          alpha(2, k) = param_perm(2, 0);
+          beta(2, k) = param_perm(2, 1);
+        } else {
+          alpha(2, k) = delta * (mean_perm(2) / (mean_perm(2) + mean_perm(3)));
+          beta(2, k) = delta * (1.0 - mean_perm(2) / (mean_perm(2) + mean_perm(3)));
+        }
+      }
+    } else{
+      alpha.col(k) = param.col(0);
+      beta.col(k) = param.col(1);
+      index(0, k) = 1;
+      trans.slice(k) = arma::eye(4, 4);
+    }
   }
 
   // return the parameters of the hierarchical beta approximation
   return List::create(Named("alpha", alpha),
-                      Named("beta", beta));
+                      Named("beta", beta),
+                      Named("index", index),
+                      Named("trans", trans));
 }
 
 // Generate the samples under the hierarchical beta approximation of the Wright-Fisher model
 // [[Rcpp::export]]
-arma::dcube generateSample_HierarchicalBeta_arma(const arma::dmat& alpha, const arma::dmat& beta, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
+arma::dcube generateSample_HierarchicalBeta_arma(const arma::dmat& alpha, const arma::dmat& beta, const arma::dcube& trans, const int& int_gen, const int& lst_gen, const arma::uword& sim_num) {
   // ensure RNG gets set/reset
   RNGScope scope;
 
@@ -672,6 +766,8 @@ arma::dcube generateSample_HierarchicalBeta_arma(const arma::dmat& alpha, const 
     frq_pth.tube(1, k) = psi_frq.row(0) % (1 - psi_frq.row(1));
     frq_pth.tube(2, k) = (1 - psi_frq.row(0)) % psi_frq.row(2);
     frq_pth.tube(3, k) = (1 - psi_frq.row(0)) % (1 - psi_frq.row(2));
+
+    frq_pth.col(k) = trans.slice(k) * arma::dmat(frq_pth.col(k));
   }
 
   // return the haplotype frequency trajectories under the hierarchical beta approximation
@@ -747,9 +843,9 @@ List calculateParam_PyramidalHierarchicalBeta_arma(const arma::dmat& mean, const
     V(2) = 0.25 - (variance(1, 3, k) / m(4) / (1 - m(5)) + 0.25 * (1 - m(5)) * (V(0) * (1 - m(3) + m(4)) + 0.25 * m(4))) / (V(0) + 0.25);
     V(5) = ((4 * variance(3, 3, k) - V(0) * (1 - m(5)) * (1 - m(5))) / (4 * V(0) + 1) - V(2) * (1 - m(5)) * (1 - m(5))) / (V(2) + 0.25);
     V(1) = - (4 * variance(0, 2, k) + V(0) * m(3) * (m(3) - m(4) + m(5))) / ((4 * V(0) + 1) * m(3) * (1 - m(3)));
-    //V(1) = (variance(2, 2, k) - variance(1, 1, k) + variance(0, 0, k) - 0.25 * V(0) * m(3) * m(3) - (V(0) + 0.25) * (V(5) * (0.25 + V(2)) + V(2) * (1 - 2 * m(4) + m(5) * m(5))) - V(0) * (- 2 * (1 - m(4)) * m(5) * V(2) + 0.25 * m(5) * m(5) - 0.25 * (1 - m(3)) * (1 - m(3))) + 0.5 * (1 - m(4)) * m(5) * V(2)) / (- 2 * m(4) * (1 - m(3)) * V(0) + 0.5 * (1 - m(3)) * m(4) + 2 * (V(0) + 0.25) * (m(3) - m(4)));
+    // V(1) = (variance(2, 2, k) - variance(1, 1, k) + variance(0, 0, k) - 0.25 * V(0) * m(3) * m(3) - (V(0) + 0.25) * (V(5) * (0.25 + V(2)) + V(2) * (1 - 2 * m(4) + m(5) * m(5))) - V(0) * (- 2 * (1 - m(4)) * m(5) * V(2) + 0.25 * m(5) * m(5) - 0.25 * (1 - m(3)) * (1 - m(3))) + 0.5 * (1 - m(4)) * m(5) * V(2)) / (- 2 * m(4) * (1 - m(3)) * V(0) + 0.5 * (1 - m(3)) * m(4) + 2 * (V(0) + 0.25) * (m(3) - m(4)));
     V(3) = ((4 * variance(0, 0, k) - V(0) * m(3) * m(3)) / (4 * V(0) + 1) - V(1) * m(3) * m(3)) / (V(1) + 0.25);
-    V(4) = (variance(1, 1, k) - (V(0) + 0.25) * (V(3) * (0.25 + V(1)) + V(1) * ((1 - m(3)) * (1 - m(3)) + m(4) * m(4)) + V(2) * m(4) * m(4)) - V(0) * (2 * m(4) * (1 - m(3)) * V(1) + 0.25 * (1 - m(3)) * (1 - m(3))) + 0.5 * (1 - m(3)) * m(4) * V(1))/((V(0) + 0.25) * (0.5 + V(1) + V(2)) - V(0) / 2 + 0.125);
+    V(4) = (variance(1, 1, k) - (V(0) + 0.25) * (V(3) * (0.25 + V(1)) + V(1) * ((1 - m(3)) * (1 - m(3)) + m(4) * m(4)) + V(2) * m(4) * m(4)) - V(0) * (2 * m(4) * (1 - m(3)) * V(1) + 0.25 * (1 - m(3)) * (1 - m(3))) + 0.5 * (1 - m(3)) * m(4) * V(1)) / ((V(0) + 0.25) * (0.5 + V(1) + V(2)) - V(0) / 2 + 0.125);
 
     // calculate the parameters of the pyramidal hierarchical beta approximation
     alpha.col(k) = (m % (1 - m) / V - 1) % m;
@@ -804,9 +900,9 @@ List approximateMoment_PyramidalHierarchicalBeta_arma(const arma::dmat& alpha, c
 
     // calculate the mean vector
     mean(0, k) = m(0) * m(1) * m(3);
-    //mean(1, k) = m(0) * (m(1) * (1 - m(3)) + (1 - m(1)) * m(4)) + (1 - m(0)) * m(2) * m(4);
+    // mean(1, k) = m(0) * (m(1) * (1 - m(3)) + (1 - m(1)) * m(4)) + (1 - m(0)) * m(2) * m(4);
     mean(1, k) = (1 - m(3) + 2 * m(4)) / 4;
-    //mean(2, k) = m(0) * (1 - m(1)) * (1 - m(4)) + (1 - m(0)) * (m(2) * (1 - m(4)) + (1 - m(2)) * m(5));
+    // mean(2, k) = m(0) * (1 - m(1)) * (1 - m(4)) + (1 - m(0)) * (m(2) * (1 - m(4)) + (1 - m(2)) * m(5));
     mean(2, k) = (2 - 2 * m(4) + m(5)) / 4;
     mean(3, k) = (1 - m(0)) * (1 - m(2)) * (1 - m(5));
 
@@ -864,10 +960,10 @@ arma::dmat generateRndGrid_2L_arma(const arma::uword& grd_num) {
   RNGScope scope;
 
   NumericMatrix frq_grd(grd_num, 4);
-  for(int j = 0; j < 4; j++){
+  for(int j = 0; j < 4; j++) {
     frq_grd(_, j) = rgamma(grd_num, 1.0, 1.0);
   }
-  for(int i = 0; i < grd_num; i++){
+  for(int i = 0; i < grd_num; i++) {
     frq_grd(i, _) = frq_grd(i, _) / sum(frq_grd(i, _));
   }
 
@@ -903,6 +999,22 @@ arma::dmat calculateECDF_2L_arma(const arma::dcube& frq_pth, const arma::uword& 
   return cdf;
 }
 
+// Calculate the root mean square deviation between the two empirical cumulative distribution functions
+// [[Rcpp::export]]
+arma::colvec calculateRMSD_arma(const arma::dcube& smp_mod, const arma::dcube& smp_apx, const arma::uword& sim_num, const arma::uword& grd_num, const arma::dmat& frq_grd) {
+  // ensure RNG gets set/reset
+  RNGScope scope;
+
+  arma::dmat cdf_mod = calculateECDF_2L_arma(smp_mod, sim_num, frq_grd);
+  arma::dmat cdf_apx = calculateECDF_2L_arma(smp_apx, sim_num, frq_grd);
+  arma::colvec dist = arma::zeros<arma::dcolvec>(smp_mod.n_cols);
+  for(arma::uword k = 0; k < smp_mod.n_cols; k++) {
+    cout << "iteration: " << k << endl;
+    dist(k) = pow(sum((cdf_mod.col(k) - cdf_apx.col(k)) % (cdf_mod.col(k) - cdf_apx.col(k))) / grd_num, 0.5);
+  }
+  return dist;
+}
+
 // Generate initial haplotype frequencies (uniform generation from the flat Dirichlet distribution)
 // [[Rcpp::export]]
 arma::dmat generateInitFreq_arma(const arma::uword& smp_siz) {
@@ -911,18 +1023,18 @@ arma::dmat generateInitFreq_arma(const arma::uword& smp_siz) {
 
   // arma::dmat hap_frq = arma::zeros<arma::dmat>(4, pcl_num);
   // arma::dmat mut_frq = arma::randu<arma::dmat>(2, pcl_num);
-  // arma::drowvec ld = arma::randu<arma::drowvec>(pcl_num);
+  // arma::drowvec LD = arma::randu<arma::drowvec>(pcl_num);
   // for (arma::uword i = 0; i < pcl_num; i++) {
   //   double a = -mut_frq(0, i) * mut_frq(1, i);
   //   a = (a >= -(1 - mut_frq(0, i)) * (1 - mut_frq(1, i)))? a : -(1 - mut_frq(0, i)) * (1 - mut_frq(1, i));
   //   double b = mut_frq(0, i) * (1 - mut_frq(1, i));
   //   b = (b <= (1 - mut_frq(0, i)) * mut_frq(1, i))? b : (1 - mut_frq(0, i)) * mut_frq(1, i);
-  //   ld(i) = a + (b - a) * ld(i);
+  //   LD(i) = a + (b - a) * LD(i);
   // }
-  // hap_frq.row(0) = (1 - mut_frq.row(0)) % (1 - mut_frq.row(1)) + ld;
-  // hap_frq.row(1) = (1 - mut_frq.row(0)) % mut_frq.row(1) - ld;
-  // hap_frq.row(2) = mut_frq.row(0) % (1 - mut_frq.row(1)) - ld;
-  // hap_frq.row(3) = mut_frq.row(0) % mut_frq.row(1) + ld;
+  // hap_frq.row(0) = (1 - mut_frq.row(0)) % (1 - mut_frq.row(1)) + LD;
+  // hap_frq.row(1) = (1 - mut_frq.row(0)) % mut_frq.row(1) - LD;
+  // hap_frq.row(2) = mut_frq.row(0) % (1 - mut_frq.row(1)) - LD;
+  // hap_frq.row(3) = mut_frq.row(0) % mut_frq.row(1) + LD;
   //
   // return hap_frq;
 
