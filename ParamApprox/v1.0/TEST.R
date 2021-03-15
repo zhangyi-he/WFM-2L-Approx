@@ -1,10 +1,7 @@
 #' @title Moment-based approximations for the Wright-Fisher model of population dynamics under natural selection at two linked loci
-#' @author Zhangyi He, Wenyang Lyu and Feng Yu
+#' @author Zhangyi He, Wenyang Lyu, Mark Beaumont, Feng Yu
 
-#' version 1.0
-
-# set the directory
-setwd("~/Dropbox/Jeffery He/iResearch/Publications/2017/HE2021-WFM-2L-ParamApprox-TheorPopulBiol")
+#' version 1.0.1
 
 #install.packages("RColorBrewer")
 library("RColorBrewer")
@@ -12,14 +9,23 @@ library("RColorBrewer")
 #install.packages("viridis")
 library("viridis")
 
+#install.packages("ggsci")
+library("ggsci")
+
 #install.packages("ggplot2")
 library("ggplot2")
 
 #install.packages("plot3D")
 library("plot3D")
 
+#install.packages("readr")
+library("readr")
+
+#install.packages("xtable")
+library("xtable")
+
 #' call R functions
-source("./Code/Code v1.0/RFUN.R")
+source("./RFUN.R")
 
 ################################################################################
 
@@ -106,11 +112,11 @@ for (i in 1:sim_num) {
 }
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, smp_mod, smp_apx,
-     file = "./Output/Output v1.0/Test v1.0/TEST_Diffus_Approx.rda")
+     file = "./TEST_Diffus_Approx.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_Diffus_Approx.rda")
+# load("./TEST_Diffus_Approx.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_Diffus_Approx.pdf", width = 16, height = 12)
+# pdf(file = "./TEST_Diffus_Approx.pdf", width = 16, height = 12)
 # par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # smp_mod <- smp_mod[, lst_gen, ]
 # smp_apx <- smp_apx[, lst_gen, ]
@@ -238,11 +244,11 @@ covariance[5, 5, ] <- mnt$variance[2, 4, ]
 covariance[5, 6, ] <- mnt$variance[3, 4, ]
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
-     file = "./Output/Output v1.0/Test v1.0/TEST_MomentApprox.rda")
+     file = "./TEST_MomentApprox.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_MomentApprox.rda")
+# load("./TEST_MomentApprox.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_MomentApprox.pdf", width = 8, height = 18)
+# pdf(file = "./TEST_MomentApprox.pdf", width = 8, height = 18)
 # par(mfrow = c(3, 1), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
 #
@@ -315,11 +321,11 @@ for (i in 1:sim_num) {
 }
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
-     file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.rda")
+     file = "./TEST_Norm_Approx.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.rda")
+# load("./TEST_Norm_Approx.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Approx.pdf", width = 16, height = 12)
+# pdf(file = "./TEST_Norm_Approx.pdf", width = 16, height = 12)
 # par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # smp_mod <- smp_mod[, lst_gen, ]
 # smp_apx <- smp_apx[, lst_gen, ]
@@ -410,11 +416,11 @@ covariance[2, 5, ] <- mnt$variance[2, 4, ]
 covariance[2, 6, ] <- mnt$variance[3, 4, ]
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
-     file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Moment.rda")
+     file = "./TEST_Norm_Moment.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_Norm_Moment.rda")
+# load("./TEST_Norm_Moment.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_Norm_Moment.pdf", width = 8, height = 18)
+# pdf(file = "./TEST_Norm_Moment.pdf", width = 8, height = 18)
 # par(mfrow = c(3, 1), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
 #
@@ -487,11 +493,11 @@ for (i in 1:sim_num) {
 }
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
-     file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.rda")
+     file = "./TEST_LogisticNorm_Approx.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.rda")
+# load("./TEST_LogisticNorm_Approx.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Approx.pdf", width = 16, height = 12)
+# pdf(file = "./TEST_LogisticNorm_Approx.pdf", width = 16, height = 12)
 # par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # smp_mod <- smp_mod[, lst_gen, ]
 # smp_apx <- smp_apx[, lst_gen, ]
@@ -582,11 +588,11 @@ covariance[2, 5, ] <- mnt$variance[2, 4, ]
 covariance[2, 6, ] <- mnt$variance[3, 4, ]
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
-     file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Moment.rda")
+     file = "./TEST_LogisticNorm_Moment.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Moment.rda")
+# load("./TEST_LogisticNorm_Moment.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_LogisticNorm_Moment.pdf", width = 8, height = 18)
+# pdf(file = "./TEST_LogisticNorm_Moment.pdf", width = 8, height = 18)
 # par(mfrow = c(3, 1), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
 #
@@ -659,11 +665,11 @@ for (i in 1:sim_num) {
 }
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, sim_num, mnt_apx, mnt_num, smp_mod, smp_apx,
-     file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Approx.rda")
+     file = "./TEST_HierarchicalBeta_Approx.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Approx.rda")
+# load("./TEST_HierarchicalBeta_Approx.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Approx.pdf", width = 16, height = 12)
+# pdf(file = "./TEST_HierarchicalBeta_Approx.pdf", width = 16, height = 12)
 # par(mfrow = c(2, 2), mar = c(5.5, 5, 5.5, 2.5), oma = c(0, 0, 3, 0), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # smp_mod <- smp_mod[, lst_gen, ]
 # smp_apx <- smp_apx[, lst_gen, ]
@@ -752,11 +758,11 @@ covariance[2, 5, ] <- mnt$variance[2, 4, ]
 covariance[2, 6, ] <- mnt$variance[3, 4, ]
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, mnt_apx, mnt_num, mean, variance, covariance,
-     file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Moment.rda")
+     file = "./TEST_HierarchicalBeta_Moment.rda")
 
-# load("./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Moment.rda")
+# load("./TEST_HierarchicalBeta_Moment.rda")
 #
-# pdf(file = "./Output/Output v1.0/Test v1.0/TEST_HierarchicalBeta_Moment.pdf", width = 8, height = 18)
+# pdf(file = "./TEST_HierarchicalBeta_Moment.pdf", width = 8, height = 18)
 # par(mfrow = c(3, 1), mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 # k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
 #
@@ -845,11 +851,11 @@ smp_apx <- smp_apx[, k, ]
 system.time(RMSD[4, ] <- cmpcalculateRMSD(smp_mod, smp_apx, sim_num, grd_num, rnd_grd = TRUE))
 
 save(sel_cof, dom_par, rec_rat, pop_siz, int_frq, int_gen, lst_gen, ptn_num, sim_num, grd_num, RMSD,
-     file = "./Output/Output v1.0/Test v1.0/TEST_RMSD.rda")
+     file = "./TEST_RMSD.rda")
 
-load("./Output/Output v1.0/Test v1.0/TEST_RMSD.rda")
+load("./TEST_RMSD.rda")
 
-pdf(file = "./Output/Output v1.0/Test v1.0/TEST_RMSD.pdf", width = 12, height = 9)
+pdf(file = "./TEST_RMSD.pdf", width = 12, height = 9)
 par(mar = c(5.5, 5, 5.5, 2.5), cex.main = 1.75, cex.sub = 1.5, cex.axis = 1.5, cex.lab = 1.5)
 k <- ((int_gen + 1):lst_gen)[(1:10) * 20]
 
